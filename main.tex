@@ -1,0 +1,595 @@
+%% Default is IEEE. Add "APA" as an option to use APA
+% add twoside for the final version so bookbinding can be done
+% singlespace can override other spacing commands
+% UoMdraft can be used for the draft version
+% When you are using IEEE, you can add IEEEdoi if you want the DOI to be listed in your refernces
+\documentclass[12pt]{uomthesis}
+
+
+\usepackage{packages/lgrind}
+%\usepackage{lgrind}
+\usepackage{cmap}
+\usepackage[T1]{fontenc}
+\pagestyle{plain}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{tabularx}
+\usepackage{booktabs}
+%\renewcommand\tabularxcolumn\cite{1}{m{#1}}% for vertical centering text in X column
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+\usepackage{enumerate}
+\usepackage{multirow}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{mathdots}
+% \usetikzlibrary{fadings}
+\usepackage{bbm}
+\captionsetup{compatibility=false}
+\DeclareMathOperator*{\argmax}{argmax}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
+\usepackage{makecell}
+\usepackage{hyperref}
+\hypersetup{
+colorlinks   = true,
+citecolor    = blue,
+urlcolor    =  blue
+}
+\usepackage{url}
+
+
+\begin{document}
+% Update the following variables. Doing so will auto-generate the first three pages:
+% 1. Cover Page
+% 2. Title Page
+% 3. Declaration Page
+\title{Improving support in LLMs for Sinhala, A low resourced language}
+\student{239337P}{J A D R Mihiranga}
+%\student{}{} % If there are multiple student authors (e.g., undergraduate project), just keep adding \student{}{} variables. The class will automatically handle it
+\degree{Master's in Computer Science} % PhD/MPhil/Master’s 
+\department{Department of Computer Science and Engineering}
+\type{Dissertation} % Thesis/Dissertation
+\degreemonth{January}
+\degreeyear{2026}
+\faculty{Engineering Faculty}
+\keywords{LLMs, NLP}
+\supervisorName{Prof. Gihan Dias}  % Name of the Supervisor
+%\supervisorName{} % If you have multiple supervisors, just keep adding \supervisorName{} variables. The class will automatically handle it
+
+
+\maketitle
+
+
+\unNumChapter{Dedication}
+Write your dedication here (if any)
+
+\unNumChapter{Acknowledgement}
+Write your acknowledgement here 
+
+
+\begin{abstractpage}
+Write your abstract here. This document is a model and instructions for \LaTeX{}. This and the \texttt{uomthesis.cls} file define the components of your paper [title, text, heads, etc.]. *CRITICAL: Do Not Use Symbols, Special Characters, Footnotes, or Math in the Title or Abstract. This document is a supplement to the general instructions for~\UoM{} students. It contains instructions for using the \LaTeX{} style files for thesis/dissertation. The document itself conforms to its own specifications and is therefore an example of what your thesis/dissertation should look like. This document contains specific instructions, for drafts submitted for review, as well as for final versions. 
+\end{abstractpage}
+
+
+% This prints the Table of Contents. Do not change this block.
+\begin{ToC}
+\makeatletter
+    \@starttoc{toc}
+ \makeatother
+\end{ToC}
+
+% This prints the List of Figures, if there is at least one figure in your document, set up according to the given guidelines.
+\iffigures
+    \begin{LoF}
+        \makeatletter
+            \@starttoc{lof}
+        \makeatother
+    \end{LoF}
+\fi
+
+
+% This prints the List of Tables, if there is at least one table in your document, set up according to the given guidelines.
+\iftables
+    \begin{LoT}
+    \makeatletter
+        \@starttoc{lot}
+    \makeatother
+    \end{LoT}
+\fi
+
+% This prints the List of Abbreviations, if there is at least one abbreviation in your document, set up according to the given guidelines.
+\ifabbrs
+    \printacronyms
+\fi
+
+% This prints the List of Appendices, if there is at least one abbreviation in your document, set up according to the given guidelines.
+\ifappens
+    \begin{LoAp}
+    \makeatletter
+        \@starttoc{apc} % Print List of Appendices
+    \makeatother
+    \end{LoAp}
+\fi
+
+% This marks the start of your chapters
+\startContent
+
+
+\chapter{Introduction}
+
+\section{Problem Statement}
+This research addresses a critical gap in Sinhala language processing. It aims to create an interactive model that enhances Sinhala text based on specific requirements. While various languages benefit from advanced NLP tools, Sinhala lacks similar resources. The primary objective is to develop a user-friendly, GPT-like model enabling users to refine Sinhala text by eliminating grammatical errors and improving readability. This project does not aim to generate new content but focuses on enhancing existing text. By doing so, it helps the development of NLP tools tailored to Sinhala, offering individuals a valuable resource to elevate the quality of their written communication.
+
+
+\section{Research Questions}
+\subsection{Main Research Question}
+How to improve the quality of formal Sinhala text generation in Large Language Models using a Retrieval-Augmented Generation approach?
+
+\subsection{Sub Research Questions}
+\begin{enumerate}
+    \item What are the limitations in current Large language Models in generating formal Sinhala text?
+    \item Can Dense Vector Indexes such as FAISS Index incorporated with LaBSE effectively retrieve the relevant Sinhala Texts to refer to generate expected text?
+    \item How does the RAG based system perform when compared with standard LLMs in Sinhala Text Generation in terms of grammar, structure and contextual relevance?
+    \item What is the impact of using a graph-based metadata filter (e.g., Neo4j) in conjunction with vector retrieval on generation accuracy and domain-specific relevance?
+    \item What are the limitations when applying RAG approach to low resourced languages like Sinhala?
+\end{enumerate}
+
+\section{Aims and Objectives}
+Primary objective of this research is to develop a GPT-like interactive language model for the Sinhala language, capable of enhancing written content according to specific requirements, such as eliminating grammatical errors and improving readability.
+
+\begin{itemize}
+    \item Implement a user-friendly interface that enables individuals to input Sinhala text and receive enhanced versions, ensuring that the tool is easily accessible and usable. • There are multiple challenges associated with text analysis in the Sinhala Language. This study will be able to address these challenges such as linguistic 1 characteristics, and contextual elements in the Sinhala Language. 
+    \item The research findings and results can contribute to the Academic research regarding NLP in a multilingual context. These will be published along a research paper in an academic journal.
+\end{itemize}
+
+\section{Significance of the Study}
+
+
+\section{Scope}
+This research targets a RAG based approach to generate formal Sinhala texts for relevant user prompts. Suitable models for transforming user texts, embedding the user prompts and generating text have been used. The following describes what falls within and out of the scope of this research.
+
+\subsection{In Scope}
+
+\begin{itemize}
+    \item The research focuses mainly on formal letters which are used in formal requests, invitations, and official communications.
+    \item Information extraction from user prompts using a transformer model and interacting with the user to obtain missing information if there are any to generate the letters. 
+    \item Developing a RAG based approach for formal letter generation in Sinhala Language.
+    \item Using LaBSE for creating text embeddings.
+    \item Using FAISS to store the example data in Sinhala and for semantic retrieval of similar examples for user prompts.
+    \item Qualitative evaluation of the generated outputs for the user prompts using human assesment. 
+    \item Two datasets have been combined and preprocessed to form a more accurate data set as the retrieval knowledge base. 
+\end{itemize}
+
+\section{Outof Scope}
+
+\begin{itemize}
+    \item Generation of formal text other than formal letters in Sinhala like Notices, News-paper article, summary, essay writing, meeting minutes, posters are not covered in this research.
+    \item Generation of informal text and spoken Sinhala are out of scope.
+    \item Building a comprehensive Sinhala NLP Pipeline including tokenizers and morphological analysers is not considered. 
+    \item Error correction and grammar checking in the generated text is not addressed.
+    \item Expansion to other low-resourced languages.
+\end{itemize}
+
+\section{Contribution}
+This research makes several contributions, which may be synthesized in increasing the Large Language Models’ support for low resourced languages. This can serve as a foundation for extending similar methods to other South Asian Languages as well. 
+
+\section{Structure of the Thesis}
+This thesis is structured into seven chapters that guide the reader through the research process from problem identification to conclusion. The introduction outlines the background, objectives, and significance of the study. The literature review explores existing work on low-resourced language processing, large language models, and retrieval-augmented generation. The methodology chapter presents the research approach and tools used, followed by the research design, which details the experimental setup and evaluation plan. The implementation chapter explains how the proposed system was built, integrating semantic retrieval and generation components. Results and evaluation discuss the performance of the system using both automatic metrics and human feedback. Finally, the discussion chapter interprets the findings, reflects on the study’s limitations, and proposes future research directions.
+
+\chapter{Literature review}
+
+\section{Sinhala NLP Resources}
+Sinhala is an Indo aryan language spoken by over 16 million people \cite{2}. However, it still remains under-resourced as a language in the NLP domain. Even though there is high resource availability for languages like English, when it comes to Sinhala, the resource availability, more importantly, the quality of resources, remains low. According to the widely-cited language resource classification by Joshi et al. (2020), Sinhala is a Class 1 “extremely low-resource” language, reflecting the paucity of corpora and NLP infrastructure []. To understand this properly, we need to take a look back at the evolution of Sinhala as a language in the NLP domain. Fundamental resources like Part of speech taggers and morphological analysers exists but in limited domain. As mentioned in the paper by Nisansa at el. Most of the morphological analysers developed are rule based \cite{1}, and even the ones that incorporated machine learning like the morphological analyser by Welgama at el \cite{3}, their results nor resources has become publicly available. The one that stands out with a comprehensive vocabulary is ‘sinMorphy’ which was also rule based in which also the accuracy was 85.2%.
+
+Two specific areas highlighting these gaps are grammatical error correction and text summarization in Sinhala. In English and other high-resource languages, grammatical error detection and correction (GEC) has seen large benchmarks and neural models, but Sinhala has no comparable dataset or widely-used system. The few studies on Sinhala grammar have been largely rule-based or limited in scope. For instance, Sewwandi et al. (2021) developed a rule-based grammar checker to help primary school students identify errors in Sinhala sentences \cite{5}. Their system applied handcrafted grammatical rules (focused on basic active-voice sentence structure) and offered corrections, but such an approach cannot scale to the complexity of open-domain Sinhala text. More recently, Jayasuriya et al. (2023) presented a study on Sinhala grammatical error correction (GEC) as a “case study” of low-resource GEC \cite{6}. They emphasize that GEC is crucial for improving Sinhala writing quality and attempt to build a model despite the lack of data. And their rule-based approach has shown over 90% accuracy for gender based noun detection in complex Sinhala sentences, which is also limited in scope considering Sinhala language as a whole. Unlike English, which has large GEC corpora (e.g., CoNLL-2014 \cite{7}, BEA-2019 \cite{8}), Sinhala lacks a robust error-annotated corpus, and only scoped or prototype grammar correction tools have been reported \cite{1}. This represents a clear gap in resources and a challenge to developing high-accuracy grammar correction for Sinhala text.
+
+Similar observations apply to text summarization in Sinhala. Early research in Sinhala summarization was limited to extractive or heuristic methods on small datasets. For example, Welgama (2012) proposed a deterministic algorithm for Sinhala text summarizing, and Wimalasuriya (2019) explored summarization in a doctoral study, likely using manually crafted methods. These early works, while pioneering, did not have the benefit of large-scale training data. In recent years, there have been a few attempts to apply modern summarization techniques. Jayawardane (2022) investigated abstractive and extractive summarization specifically for government gazette documents in Sinhala, and Rathnayake et al. (2023) experimented with summarizing Sinhala textbooks \cite{9}, comparing extractive vs. abstractive approaches. Jahan and Wijesekara (2022) even compared simple frequency-based methods (TF–IDF) with graph-based TextRank for Sinhala summarization, finding TF–IDF performed better on their limited data \cite{10}, a result that underscores the lack of sophisticated models tuned for Sinhala. A major development was the creation of the XL-Sum (multilingual summarization dataset) \cite{11} in 2021, which included a small portion of Sinhala data. Then the multimodal summarization dataset (M3LS) by Verma at el \cite{12} provided over 10,000 Sinhala news articles with professionally curated summaries, mined from BBC Sinhala news. This dataset is by far the largest publicly available resource for Sinhala abstractive summarization. Its release enabled the training of neural summarization models for Sinhala for the first time, using architectures like mT5 or mBART that support Sinhala. Still, 10k examples is modest by deep learning standards, and they cover primarily news domain. Thus, while summarization research in Sinhala has progressed, it remains limited in breadth and robustness. There are no published Sinhala summarization systems on par with English state-of-the-art, and practical use-cases (e.g. summarizing Sinhala legal documents or literature) are left unaddressed. 
+Beyond grammar and summarization, general Sinhala text corpora and pretrained models are scarce. Sinhala Wikipedia, web news archives, and publicly crawled data (e.g. Common Crawl) constitute the main sources of text. The Common Crawl-based “CC-100” \cite{13} corpus used to train multilingual models did include Sinhala, but in very small quantities relative to languages like English. For example, Conneau et al. (2020) report that the Sinhala portion of CC-100 was orders of magnitude smaller than for high-resource languages, inevitably limiting a model’s Sinhala proficiency. Indeed, the performance of multilingual language models on Sinhala correlates with the tiny training data size \cite{2}. In the absence of large monolingual corpora, researchers at University of Moratuwa recently took the initiative to compile and pre-train Sinhala-specific language models. Dhananjaya et al. (2022) trained the first substantial Sinhala monolingual BERT models (SinBERT) \cite{14} and evaluated them on Sinhala text classification. They found that prior to their work, the best available model for Sinhala was XLM-R (a multilingual RoBERTa) and even that outperformed earlier multilingual embeddings like LASER or LaBSE on Sinhala tasks. By training on a collected Sinhala corpus, their Sinhala-RoBERTa models achieved significantly better accuracy than XLM-R on classification, showing the value of tailored models. Crucially, Dhananjaya et al. also noted that research and data for Sinhala NLP are extremely scarce citing that Sinhala received very little attention in NLP literature and data resources compared to even other low-resource languages \cite{2}. The lack of publicly released datasets was a continuing problem. Looking at the work done during the past decade, mostly they have been dependent on either social media datasets or crawled news datasets. This limits the potential of Sinhala supported LLMs as SInhala is a vastly diverse language with a rich vocabulary and flow. Even when researchers create something (e.g. a corpus or tool), it is often not shared publicly, hindering others from building on it \cite{1}. There is a notable void in comprehensive text enhancement resources meaning tasks like style transfer, grammar refinement, or holistic text quality improvement have barely been explored. This sets the stage for the present research to fill these gaps by leveraging large language models in an innovative way.
+
+\section{Perspectives from Other Low-Resource Languages}
+The challenges faced in Sinhala NLP are not unique. Many low-resource languages globally share similar struggles, and examining them provides context and potential solutions. Studies on African, South Asian, and Austronesian languages (among others) reveal recurring themes: lack of corpora, absence of pretrained models, and the consequent necessity for multilingual or cross-lingual strategies. For example, languages across Africa had very limited NLP presence until the Masakhane project and others galvanized dataset creation and transfer learning approaches in recent years (Adelani et al. 2022). Similarly, in South Asia, languages like Sinhala, Nepali, and Malayalam are under-supported compared to Hindi or Bengali. A common approach has been to leverage multilingual models that include these languages in training. Multilingual transformers such as mBERT and XLM-R were trained on dozens of languages and thereby offer a starting point for low-resource cases \cite{2}. It was observed that if a language is at least included in a large multilingual model’s training, the resulting representation can be fine-tuned for decent performance on that language. Sinhala has benefited from this to some extent: inclusion in models like LASER, LaBSE, mBART, and mT5 means those models can produce Sinhala text or embeddings \cite{1} \cite{6}. However, the degree of benefit is proportional to the data seen. This makes the improvement these low resourced languages gain from the fine tunings less significant with respect to the high resource languages like English.
+Another tactic seen in other low-resource contexts is cross-lingual transfer via a related higher-resource language. For instance, Uyghur NLP has leveraged Turkish, and Kashmiri has leveraged Hindi/Urdu \cite{16}, on the premise of lexical or structural similarity. In the case of Sinhala, one might consider whether related languages could help. Sinhala’s closest relative, Dhivehi, is also low-resource language. however, Sinhala does share some vocabulary and structure with other Indo-Aryan languages (like Bengali or even Hindi to a lesser extent). There is evidence that cross-lingual transfer can help if the model is exposed to both languages’ data during training \cite{2} \cite{17}. Many multilingual benchmarks (e.g. XTREME, MASSIVE) show that a model trained on a high-resource language can carry over some ability to a typologically similar low-resource language. In practice, direct transfer to Sinhala has limits due to script differences (Sinhala uses its own script, not Devanagari or Arabic), but techniques like transliteration or joint vocabulary training can mitigate this. A notable example in literature is the use of translation as an intermediary. When faced with a Sinhala task, one can translate the Sinhala text to English, apply an English model, and translate the output back to Sinhala. This two-step approach has been used for tasks like classification and even question answering. Ranaldi et al. (2025) refer to this as the “question-translation” approach in a multilingual QA setting \cite{18}. They found translating a low-resource language question into English before retrieval and answer generation (then translating the answer back) can improve results in some cases. However, such approaches may suffer if the translation system is weak or if the content is very culture specific. For an example an idioms may get lost in translation by taking the literal meaning like “Over the moon”. Ranaldi et al. also experimented with direct multilingual retrieval and answer generation (without translation) and a hybrid “CrossRAG” approach where retrieved documents in various languages are translated to a common language for the generator. Their findings underscore a general point. multilingual and cross-lingual methods are key for low-resource language tasks, but they must be applied carefully to handle differences in vocabulary and content coverage.
+However, the global NLP community has begun initiatives specifically targeting low resourced languages. For example Meta AI’s No Language Left Behind (NLLB) project (2022 tried to collect data and train translation models for 200 languages including SInhala, demonstrating that with significant effort, the resource gap can be narrowed down. The NLLB model (54 billion parameters) showed improved Sinhala translation quality after incorporating newly gathered Sinhala text \cite{15}. These type of efforts usually rely on mining web data and leveraging volunteer translations, which might be a model for Sinhala to expand the corpus via web crawls, OCR of books, documents etc. and then train models. Another example is the Indic NLP Library and AI4Bharat efforts which focused on Indian languages. While Sinhala is not an official Indian language, these projects improved tooling for languages like Tamil and Sinhala through shared efforts (e.g. cross-lingual word embeddings). From these global perspectives, a few trends are clear: (1) Resource creation (even if small) is critical. Any new dataset can support research if shared. (2) Multilingual pretraining is a strong foundation. Utilizing models like XLM-R or mT5 is now standard to give low-resource languages a fighting chance \cite{2} (3) Adaptive techniques such as transfer learning, fine-tuning with small data, and data augmentation are commonly employed to compensate for data shortages. The experiences from other low-resource languages provide a blueprint. Despite the challenges, methods exist to elevate a low-resource language’s NLP capabilities by creatively utilizing whatever resources are available, and by borrowing strength from high-resource languages. These insights reinforces the chosen direction for Sinhala. Utilizing whatever short amount of data and resources available in creative ways to improve support for Sinhala.
+
+
+\section{Approaches to Improving LLM Support for Low-Resource Languages}
+Given the limitations in datasets and pretrained models for Sinhala, researchers have explored a variety of techniques to improve this. Multilingual and cross lingual training, prompt based learning (few shot prompting), data augmentation, cross lingual transfer learning, parameter efficient fine tuning are some of these methods highlighted in the recent past. Let’s dive into these concepts and their potential one by one.
+
+\subsection{Multilingual Pretraining and Cross-Lingual Transfer}
+Multilingual pretraining has beena  game changer for low resourced languages in NLP. Models like mBERT, XLM-R, MT5 and mBART have been trained on text from hundreds of languages, including low resourced ones. The idea is that a model with a shared vocabulary and parameters for multiple languages can transfer knowledge among them. For instance, a concept learned in one language might help the model understand the same concept expressed in another language. For Sinhala, multilingual transformers offered the first real high-performance encoders/decoders – e.g., XLM-R’s strong results on Sinhala text classification \cite{2}. However this performance is limited by the amount of Sinhala used in pretraining. Although since this is better than none, since Sinhala text embedded in a massive model allows zero-shot or few-shot capabilities that were previously impossible. For example, an instruction-tuned multilingual model (like Google’s FLAN-T5 or Facebook’s XGLM) can often understand basic Sinhala prompts and generate Sinhala output, despite never being explicitly trained for Sinhala tasks. But this ability is far from perfect, as this can lead to many grammatical errors. Recent studies have quantified this cross-lingual ability. Cahyawijaya et al. (2024) show that large models are indeed “few-shot in-context learners” even for low-resource languages \cite{2}. By supplying a few examples in the target language, an LLM like GPT-3 can perform tasks in languages it has minimal training data for \cite{17}. Their extensive study over 25 low-resource languages finds that in-context learning narrows the gap by leveraging the model’s latent multilingual knowledge, especially when the examples help align the semantics between the low-resource language and a language the model knows well.
+This cross-lingual alignment strategy – sometimes called X-ICL(cross-lingual in-context learning) \cite{20} can significantly improve performance on low-resource tasks by essentially guiding the model to transfer what it knows from a high-resource language to the low-resource context. For example if given a paragraph to summarize in Sinhala, we can provide couple of examples of good English summaries, the model has the ability to apply the learned task to Sinhala. According to studies, a carefully curated prompt design can yield better results.
+multilingual models combined with cross-lingual prompting or fine-tuning allow knowledge transfer from high-resource to low-resource languages, offering a powerful approach to compensate for limited data. This insight underpins our thesis methodology. We exploit the fact that modern LLMs (like GPT-4 or multilingual transformers) have some latent Sinhala ability that can be activated and improved through cross-lingual context and fine-tuning.
+
+\subsection{Data Augmentation and Synthetic Data Generation}
+When real data is scarce, creating synthetic data is a well-established approach. In machine translation, back-translation \cite{21} is a classic example that translates target-language sentences to the source language to augment parallel data. Similar ideas have been applied to other tasks and languages. For Sinhala, data augmentation has been used to resolve problems like out-of-vocabulary (OOV) words and domain adaptation in translation. For example, Fernando et al. (2020) \cite{22} explored augmenting a Sinhala-English-Tamil translation model by generating synthetic parallel sentences for domain-specific terms. This study presented two augmentation techniques to generate synthetic Sinhala sentences and demonstrated that these techniques improved translation of sentences containing OOV terms. Furthermore, this study shows the model could better handle rare words by injecting semantically plausible fake sentences into training. They constrained the synthetic data with semantic and syntactic checks to maintain fluency \cite{21}. The results showed that even simple semantic constraints (e.g. using word embeddings to ensure replacements make sense) can significantly help, which the authors highlight as “promising for low-resource languages that have limited linguistic tool support”. In other words, even without a perfect parser or extensive lexicons, we can leverage word vectors from a monolingual corpus to create useful new examples, a practical trick in low-resource settings.
+For tasks like grammatical error correction (GEC), data augmentation is often done by generating artificial errors in correct sentences. In absence of a Sinhala error corpus, a system could take clean Sinhala text and algorithmically insert errors (spelling mistakes, agreement errors, etc.) to train a correction model. This approach has workedl for low-resource GEC in other languages (e.g. Russian, Ukrainian). Although we did not find a specific publication for Sinhala GEC augmentation, the concept is acknowledged in Jayasuriya et al. (2023) that creating even a synthetic error corpus is a needed step for Sinhala \cite{5}. Likewise, for summarization, one could augment data by paraphrasing or using translation. For example,  take an English article, translate it to Sinhala (to serve as “input”), and translate its summary to Sinhala (to serve as “output”). This effectively generates a Sinhala summarization pair using a pivot language. The risk with synthetic data is that it may not fully capture the nuances of the target language, but it undeniably expands the training material. Given Sinhala’s low-resource status, augmentation is not just helpful but perhaps necessary to get sufficient training examples for any deep learning model. Our literature review supports incorporating data augmentation in the thesis: whether by using translation-based techniques, noising and denoising tasks, or retrieval of related sentences to form new training pairs, these methods can supply the model with much-needed exposure to Sinhala text variations. In summary, data augmentation offers a way to amplify low-resource datasets, and when guided by linguistic constraints or high-resource references, it can improve model robustness in Sinhala \cite{22}.
+
+\subsection{Prompt Engineering and Few-Shot Learning}
+Prompt engineering refers to designing sophisticated inputs to an LLM that instructs it to perform a task without additional training. This includes formulating instructions, providing a role or context, and giving examples in the prompt (few-shot prompting). In low-resource scenarios, prompt engineering is appealing because it does not require training data or model updates – instead, it leverages the knowledge already present in a large model. Many recent works have explored the efficacy of prompt-based vs fine-tuned approaches. A relevant study by Trad and Chehab \cite{23} compared prompt engineering with fine-tuning for a niche task (phishing URL detection) across GPT-3.5, Claude, and fine-tunable models. They tried various prompt strategies (zero-shot instructions, role-playing scenarios, even chain-of-thought reasoning) and managed to get an F1 score loser to 92.7% with an optimized prompt on GPT-3.5. This shows that a carefully engineered prompt can indeed achieve high performance, equivalent to complex feature-based classifiers. However, when they fine-tuned smaller LMs (GPT-2, DistilGPT-2, etc.) on a small phishing dataset, they reached even higher performance (~97% F1). Moreover, in more realistic settings and edge cases, the fine-tuned models proved more robust than prompt-only solutions. The authors concluded that while prompt engineering allows rapid prototyping without training, fine-tuning for the specific task ultimately yields superior accuracy, and they suggest hybrid strategies (using prompt-engineered data to assist fine-tuning, etc.). This finding is echoed in other literature that prompts can get you surprisingly far, but there is often a gap that only task-specific adaptation can fill.
+For Sinhala and other low-resource languages, prompt engineering might involve instructing the model in English but asking for Sinhala output, or providing example pairs in Sinhala (few-shot). For example, one could show a GPT-4 model two examples of “informal Sinhala sentence -> formal corrected Sinhala sentence” and then ask it to do the same for a new input. If GPT-4’s multilingual training is decent, it may follow the pattern and produce a corrected formal sentence. This is essentially using few-shot learning as a way to do style transfer or error correction. Research by Cahyawijaya et al. (2023) \cite{24} indeed confirms that few-shot prompts can significantly enhance a model’s performance in low resources languages, by bridging the task understanding from higher-resource languages. However, one must carefully choose how to present the examples. An interesting point from their work was that naïvely mixing languages in the prompt (e.g. giving an English example for a Sinhala task) can confuse the model unless handled properly. They found that aligning the query (i.e., making the model see the task in the same language space as it will output) was more effective than just aligning labels. In practice, this might mean translating any English instructions to Sinhala so the model fully operates in Sinhala for that query. But this does not mean using a low-resource language for querying will always work. For instance, Ranaldi et al. (2025) tried prompting a model to retrieve answers in multilingual QA by either giving the question in English or the native language. Their translation-following method effectively prompted-engineered the retrieval step and improved coverage for low-resource languages. So, this implies that the prompting language will ultimately depend on multiple variables such as the task, the quality of examples etc, for the model to perform better.
+
+In summary, prompt engineering is a game-changer for low-resource NLP, especially for languages like Sinhala, because it lets us leverage large language models that have already seen some Sinhala text, even if we don’t have extensive labeled data. It’s particularly helpful for structured tasks or stylistic changes, such as writing letters or correcting grammar, because we can clearly instruct the model on exactly what kind of output we want.
+However, as researchers have noted, prompt-based responses can sometimes be inconsistent or break down when the input differs significantly from examples provided in the prompts. To address this, this thesis suggests combining prompting with techniques like retrieval and minimal fine-tuning, combining their strengths to create more reliable outcomes.
+Yet, even without any training examples, the zero-shot and few-shot capabilities of large language models enable us to tackle tasks simply by phrasing requests thoughtfully. This marks a significant shift away from traditional methods that heavily relied on supervised training data, and it’s particularly meaningful in contexts like Sinhala NLP, where resources are limited.
+
+\subsection{Parameter-Efficient Fine-Tuning (Adapters and LoRA)}
+While prompt engineering works at inference time, fine-tuning modifies the model itself to better handle a task or language. Traditional fine-tuning (updating all model weights) is often infeasible with today’s large models, especially for researchers with limited hardware and resources. This has led to parameter-efficient fine-tuning (PEFT) methods like adapters and LoRA (Low-Rank Adaptation), which update only a small fraction of the model’s parameters. The idea is to inject a small trainable module or tweak into the network that can be learned with limited data and compute, while the vast majority of the model’s knowledge is frozen. Adapters (Houlsby et al. 2019) \cite{25} add tiny bottleneck layers to each transformer block. LoRA (Hu et al. 2021) \cite{26} inserts low-rank weight matrices that are trained instead of the full weights. These techniques have shown they can fine-tune massive models with minimal GPU memory and without overfitting to small datasets. For example, recent research introduced LOMO (Low-Memory Optimization), a fine-tuning regimen that combines gradient checkpointing and quantization to enable full fine-tuning of a 65B model on limited hardware. But even without full fine-tuning, approaches like LoRA have been embraced in community projects to adapt models like LLaMA-2 for new languages. Indeed, there have been community-driven efforts to create a “Sinhala LLaMA” by fine-tuning LLaMA on whatever Sinhala text is available, often using LoRA for practicality (some are visible on HuggingFace Hub \cite{10}). These LoRA-adapted models are typically small (e.g. a GPT-Neo 125M fine-tuned on Sinhala Wikipedia) and far from the power of GPT-3, but they represent important steps. Dhananjaya et al. (2022) \cite{2} also effectively did a form of PEFT by training Sinhala RoBERTa models from scratch on a limited corpus and then fine-tuning them on downstream tasks Their approach of releasing the models and some new datasets was a boost for Sinhala NLP research. Furthermore, a study by Rathnayake et al. (2023) \cite{27} used adapter-based fine-tuning on XLM-R to handle Sinhala-English code-mixed text classification. By plugging in adapters for Sinhala, they could specialize a multilingual model to that mixed language scenario without retraining everything. This demonstrates the versatility of parameter-efficient methods in low-resource setups: one can add new capabilities to a model with relatively few parameters tuned.
+The literature suggests that even a small amount of fine-tuning data can noticeably improve an LLM’s performance in a low-resource language, which aligns with our intuition. The critical takeaway from the literature is that PEFT techniques are enabling low-resource communities to customize large models to their languages/tasks without needing enormous data or compute.
+
+\subsection{Retrieval-Augmented Generation (RAG)}
+Retrieval-Augmented Generation (RAG) is a method that combines an information retrieval component with a text generator to enhance the generator’s performance, especially on knowledge-intensive tasks. The core idea, introduced by Lewis et al. (2020) \cite{28}, is that instead of relying solely on the model’s internal knowledge (which might be incomplete or outdated), we can fetch relevant external documents and feed them into the model as context for generation. This approach has two major benefits. It mitigates hallucinations (the model can base its output on real retrieved facts) and it injects up-to-date or domain-specific information that the model wasn’t trained on. While RAG was initially popularized for open-domain question answering, it has rapidly become a cornerstone technique in many NLP applications, from conversational agents (e.g. Bing Chat retrieving web results) to personalized assistants.
+In multilingual and low-resource contexts, RAG is particularly appealing. If a model doesn’t know much about a topic in Sinhala, we can compensate by retrieving documents in Sinhala about that topic from a local corpus or knowledge base. RAG thus offers a way to circumvent the lack of training data: instead of trying to bake all of Sinhala knowledge into the model’s weights, we let the model look things up as needed. Ranaldi et al. (2025) \cite{18} explicitly investigate RAG for multiple languages and highlight that its use in multilingual settings was previously underexplored. They implement variants where either the query or the retrieved documents are translated to English, versus a fully multilingual retrieval mode. One interesting finding was that a naive multilingual RAG (where the question is asked in, say, Sinhala and documents are retrieved from a Sinhala wiki) can suffer if the document corpus is sparse, whereas translating the question to English to tap into English Wikipedia yields more hits but then creates a disconnect for generation. Their proposed solution, CrossRAG, translates retrieved foreign-language documents into English before giving them to the generator. This way, the generator (which might be stronger in English) processes everything in one language and produces an answer, which can then be translated back. This method significantly improved QA performance for both high and low-resource languages in their experiments. 
+For our purposes, RAG is attractive not for QA per se but for text generation tasks like letter writing. The principle remains: provide the model with relevant text snippets so it has concrete material to base the output on. In the case of formal letter generation, we can build a knowledge base of existing official letters (e.g. a database of letters categorized by type: job applications, complaint letters, invitations, etc.). When the user requests a certain type of letter, the system can retrieve a few similar letters or even specific phrases from this database. These retrieved pieces then serve as in-context examples or guides for the LLM. By seeing actual examples of formal phrasing, structuring, correct salutations, closings, and domain-specific terminology, the LLM is far more likely to produce a correct and contextually appropriate letter. This approach addresses two issues identified in the literature. The lack of training data (we might have too few example letters to fully fine-tune a model, but we can still use those examples at inference via retrieval) and the tendency of models to hallucinate on limited data.(The retrieved text grounds the generation in real content, reducing guesswork). Moreover, RAG aligns with the general direction of making LLM outputs verifiable and traceable – the retrieved documents can act as evidence or at least inspiration, which is useful in formal writing where factual correctness and appropriate references matter.
+
+\subsection{Summary}
+
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{@{}p{3cm}p{6cm}p{3.5cm}p{3.5cm}@{}}
+\toprule
+\textbf{Method} & \textbf{Description} & \textbf{Work done for low-resource languages other than Sinhala} & \textbf{Work done for Sinhala} \\
+\midrule
+Multilingual Pretraining and Cross-Lingual Transfer &
+Training multilingual models on multiple languages to transfer knowledge among languages. Improves NLP capabilities by shared representations. &
+Cahyawijaya et al. (2024): Few-shot cross-lingual learning (X-ICL) improved tasks in 25 languages. XLM-R strong in Sinhala text classification. &
+Multilingual models (FLAN-T5, XGLM) show basic Sinhala capabilities but are error-prone. \\
+\midrule
+Data Augmentation and Synthetic Data Generation &
+Artificially generating data (e.g., back-translation, error insertion, paraphrasing) to expand datasets and overcome data scarcity. &
+Back-translation, synthetic error creation used for machine translation and grammatical error correction. &
+Fernando et al. (2020): Synthetic parallel sentences. Jayasuriya et al. (2023): Need for synthetic data in Sinhala grammar correction. \\
+\midrule
+Prompt Engineering and Few-Shot Learning &
+Designing instructions and examples in prompts to enable task performance without explicit training. &
+Trad and Chehab (2023): Prompting achieves high accuracy. Ranaldi et al. (2025): Improved QA via translation-aware prompting. &
+Few-shot learning and prompt design promising for structured Sinhala tasks. \\
+\midrule
+Parameter-Efficient Fine-Tuning (Adapters, LoRA) &
+Fine-tuning only parts of large models to adapt them with minimal data. &
+Multilingual LLaMA and LoRA fine-tuning adopted by community. &
+Sinhala LLaMA LoRA efforts. Rathnayake et al. (2023): Adapter fine-tuning of XLM-R. Dhananjaya et al. (2022): Sinhala RoBERTa fine-tuned. \\
+\midrule
+Retrieval-Augmented Generation (RAG) &
+Combines retrieval with generation to reduce hallucination and dynamically integrate external knowledge. &
+Ranaldi et al. (2025): CrossRAG improved multilingual QA. &
+No noted work done. \\
+\bottomrule
+\end{tabular}
+\caption{Overview of methods applied to low-resource languages including Sinhala}
+\label{tab:low_resource_methods}
+\end{table}
+
+\chapter{Methodology}
+The anticipated methodology as per the design science process is as follows.
+
+\section{Research Design}
+This section covers the proposed design by providing design assumptions, design details of RAG model, user interface, LLM and the underlying data. 
+
+\subsection{Design Assumptions}
+The statements mentioned below are assumed to be true by the researchers with regard to the research design.
+
+\begin{itemize}
+    \item The research design approach considered the government letters provided by the University of Moratuwa and the dataset created by the authors.
+    \item The users or the evaluators will provide clear prompts to the system.
+    \item General Purpose LLMs have the knowledge on Formal Letter Templates and Structures, even for the Sinhala Language. 
+    \item The evaluation metrics used in this research, which are <add> and human evaluation to guage the structure, grammar, and fluency, are reliable in Sinhala Text Generation despite being designed for high-resourced languages.
+\end{itemize}
+
+The high-level architecture of the proposed research design approach is illustrated in Figure \ref{fig:3.1}
+\begin{figure}
+    \centering
+    \includegraphics[width=1.5\linewidth]{images/high_level_architecture.png}
+    \caption{A high-level diagram of the proposed research design approach}
+    \label{fig:3.1}
+\end{figure}
+
+\subsection{Retrieval-Augmented Generation Pipeline}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{images/rag_pipe.png}
+    \caption{RAG Pipeline}
+    \label{fig:3.1.2}
+\end{figure}
+
+\section{Case Study: Formal Letter Generation in Sinhala}
+This research study specifically targets the improvement of text generation in Sinhala in LLMs through a more focused study on Sinhala Formal Letter writing. 
+
+Sinhala formal letters is a significant part of written communication in Sri Lanka in the government, educational institutes, and other industries.  These letters follow a strict structure and a more formalized writing style(Written language - ලිඛිත භාෂාව) and one has to thoroughly know the Orthography(අක්ෂර වින්‍යාසය), which refers to the set of standards which should be followed, including spelling rules, punctuation, and letter formation. It is important that these letters follow the Grammar conventions as well. Formal Letter Writing is a crucial skill in the Sri Lankan Education System as well, which is still being examined in the Ordinary Level Sinhala Exam paper. 
+
+\subsection{Structure of Sinhala Formal Letters}
+<Add Image>
+
+\subsection{Categories of Sinhala Formal Letters}
+
+\begin{enumerate}
+    \item Request Letters
+    \item Invitation Letters
+    \item Thank You Letters
+    \item Recommendation Letters
+    \item Inquiry Letters
+    \item Transfer Letters
+    \item Leave Letters
+    \item Complaint Letters
+    \item Apology Letters
+\end{enumerate}
+
+\subsection{Challenges faced by LLMs in writing Formal Letters in Sinhala}
+\subsubsection{Morphological Complexity}
+Sinhala is a morphologically rich language. Sentences in Sinhala have complex patterns. Words in Sinhala change their form based on case, number, tense, honorific level, and many more which creates a challenge for LLMs.
+
+\subsubsection{Honorifics}
+It is important to select the proper and appropriate verb forms and salutations which should clearly reflect the relationship between the sender and the recipient. This demands sophisticated contextual understanding beyond simply filling templates.
+
+\subsubsection{Limited Digital Corpus}
+There is a scarcity of digitized Sinhala Formal letters when compared with other languages and this limits training data that is available to LLMs.
+
+\subsubsection{Diglossia}
+Sinhala exhibits Diglossia*<definition> with significant differences between formal written Sinhala and spoken Sinhala. 
+
+\section{Data Sources}
+\subsection{Data Acquisition}
+The dataset in this research was acquired through three approaches to ensure comprehensive coverage of formal letters and to avoid biasness in creating the dataset.
+
+\begin{enumerate}
+    \item First, we reviewed the past Sinhala Language and Literature GCE Ordinary Level Examination papers from year 2011 - 2025,  model papers for Sinhala, and Sinhala Language and Literature papers for Grade 10 and Grade 11 from different provinces and schools from which we identified the formal letter writing questions. The identified questions were then extracted through an online OCR scanning API to digitize as many of the papers were obtained either as physical printed documents or scanned image based PDF files(text could not be extracted from these PDFs). The converted data were stored in a CSV file formatted as given in the Table<table no>. 
+    \item Secondly, we collected formal letter prompts/questions from online resources, and other model papers and distributed the questions among a group of students who have successfully passed the GCE O/L examination with A passes for Sinhala Language and Literature. They were then asked to write formal letters for the given prompts and they were then entered to the dataset to make this more authentic. 
+    \item Finally, aiming to capture the real-world examples, we obtained a vast selection of real formal letters sent from and to various government institutions, banks, schools by various professionals and general public alike. These letters were collected from a dataset provided by the Moratuwa University which included a total of 700<todo> letters and also through personal contacts. The dataset received from the University was already digitized and were available as text files which were later put into the same CSV file. The letters obtained from the personal contacts were in physical documents and they were digitized using OCR technology enabled API online and were then stored in the dataset as well. <todo> - add the API tool used for OCR scanning.
+\end{enumerate}
+
+\section{Data Preprocessing}
+The collected dataset was pre-processed in the following ways to make it more suited for the model.
+
+\subsection{Removing lengthy letters}
+The letter contents with more than 150 words were manually removed from the dataset. These texts were challenging to deal with and such letters made the model deviate from what was expected as output. Some of these lengthy letters included a copy of former letters sent, and forms to fill and name lists and their descriptions. 
+
+\subsection{Removing Non-Essential Components manually}
+The goal here was to maintain a standardized structure, to remove the personal details like addresses from the collected letters from institutions and personal contacts, and to remove the obvious components like Salutations and Closing remarks. The final contents of the csv only had the subject and the main body of the letter. Removed elements included the following. 
+
+\begin{itemize}
+    \item Sender Address
+    \item Recipient Address
+    \item Date
+    \item Salutation
+    \item Closing remarks
+    \item Signature blocks
+\end{itemize}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{images/letter_transform.png}
+    \caption{RAG Pipeline}
+    \label{fig:3.4.2}
+\end{figure}
+
+\subsection{Removal of Temporal references}
+All the dates and times were identified and replaced with placeholders <date> and <time> to avoid overfitting. 
+
+\subsubsection{Example} 
+Original: "මෙම ලිපිය 2022 මාර්තු 15 වැනි දා ලියන ලදී." 
+After replacement: "මෙම ලිපිය <date>  වැනි දා ලියන ලදී."
+
+\subsection{Named Entity Recognition}
+As we collected actual letters from institutions and personal contacts, ensuring the privacy of these letters was important. Therefore, a Named Entity Recognition(NER) model was trained to detect and remove the named entities from the main body of the letters. These identified named entities included names of people and institutions, and geographical locations
+
+\subsubsection{Example}
+Original: "මා නිමල් පෙරේරා විසින් මහනුවර රිජන්සි පාසලට ලියන ලද ලිපියකි." 
+After NER and anonymization: "මා <NAME> විසින් ලියන ලද ලිපියකි."
+
+Given below is a description of the properties of the final csv file.
+
+<Add Table>
+
+\section{Technology Stack}
+
+\subsection{Text Embedding}
+
+\subsubsection{LaBSE}
+LaBSE is a Language-agnostic BERT sentence embedding model that supports 109 languages[x1]. This model encodes text into high-dimensional vectors and is trained to mine for translations of sentences. However, the model’s usages extend beyond translation, enabling the users to utilize LaBSE for text classification, semantic similarity, clustering and other NLP tasks.
+In this research, we have used the LaBSE model to vectorize(create an embedding) Sinhala text data in order to convert it into a FAISS Index-based database. 
+
+\subsection{Semantic Retrieval}
+
+\subsubsection{FAISS Index}
+Faiss is a known library for efficient similarity search and clustering of dense vectors. This is written in C++ with complete wrappers for Python. Faiss has algorithms that can search in sets of vectors of any size. 
+
+<Add How FAISS work>
+
+\subsection{Transformer Model}
+Roberta
+
+\subsection{Text Generation}
+OpenAI - GPT4o
+
+\subsection{MetaData Filtering}
+Neo4j
+
+\section{Hypothesis}
+The aforementioned experiment aims to negate the following null hypothesis with the proposed system against a conventional system.
+
+\subsection{Null Hypothesis (H0)}
+There is no significant difference in grammatical errors, correctness, fluency and contextual relevance of formal letters written in the Sinhala Language generated by a standard Large Language Model compared to those generated using a Retrieval-Augmented Generation approach.
+
+\subsection{Alternative Hypothesis(H1)}
+The use of a Retrieval-Augmented Generation (RAG) approach significantly improves the fluency, grammatical correctness, and contextual relevance of Sinhala formal letters compared to generation by a standard language model alone.
+
+\section{Embedding and Indexing Process}
+Indexing and embedding is done using FAISS (Facebook AI Similarity Search), which is a highly efficient indexing library specifically designed for rapid similarity search in dense vector embeddings. It supports high-dimensional embedding spaces, enabling swift retrieval of semantically similar data. FAISS employs various optimized indexing methods, including clustering-based quantization and hierarchical structures, facilitating efficient approximate nearest neighbor searches. This makes FAISS especially suitable for the letter-generation pipeline in Sinhala, where categorized and cleaned letter sections are embedded into vector representations. Leveraging FAISS indexing allows rapid retrieval of structurally and contextually relevant letter bodies during prompt-based generation tasks, significantly improving response accuracy and speed within retrieval-augmented generation (RAG) systems. Consequently, FAISS’s effectiveness in managing and retrieving large-scale embeddings ensures the pipeline consistently generates coherent, contextually appropriate Sinhala letters tailored to user prompts. Detailed explanation on how this is done is explained in the following section.
+
+\section{Generation Pipeline}
+The generation pipeline employs retrieval-augmented generation (RAG), where the most similar letter structures are retrieved from the FAISS-indexed dataset. After retrieval, the pipeline utilizes prompt engineering techniques—discussed in detail in the subsequent section—to optimize the prompt provided to GPT-4.0, the generative large language model (LLM) used in this experiment. Following generation, the output is evaluated by users, and the prompt is refined based on their feedback. Acceptable outputs undergo named entity recognition (NER) processing to remove entities before being re-embedded and added back to the FAISS index, continuously enhancing the dataset's quality and breadth.
+
+\section{Evaluation Strategy}
+The evaluation of the generated Sinhala letters follows a two-pronged approach. Firstly, an internal feedback loop embedded in the pipeline allows users to rate the quality of the generated output. Based on this rating, the prompt is either optimized for future use or the letter is accepted and added—after NER processing—to the FAISS index. Secondly, to ensure accuracy and cultural appropriateness, human evaluation is conducted by five experts involved in various aspects of Sinhala writing. Given the limitations of current large language models in handling Sinhala effectively, human judgment is essential for a comprehensive assessment. Additional feedback is also gathered from broader user groups to validate the overall performance of the pipeline.
+
+
+\chapter{Implementation}
+
+\section{Introduction}
+
+This part of the thesis focus on the implementation of the full pipeline from passing the user prompt into the system until the letter generation.
+
+This pipeline consists of 5 different parts.
+
+\section{User Interface}
+
+Simple user interface to pass the prompts and interact with the system (chat model) to improve the prompt and display the generated Letter. Also a rating system is included for the user to rate the generated letters.
+
+<add a set of UI images with descriptions>
+
+\section{Backend API}
+Consists of REST APIs to interact with the pipeline
+
+\subsection{Endpoints}
+Consists of REST APIs to interact with the pipeline. Table 4.1 shows the endpoints with a description of how the backend APIs behave. More details on this are on the API spec on GitHub repository \cite{29}.
+
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{@{}p{4cm}p{12cm}@{}}
+\toprule
+\textbf{Endpoint} & \textbf{Description} \\
+\midrule
+\verb|POST /generate_letter| &
+Generates a letter based on the provided original and enhanced prompts using the LLM. \\
+\midrule
+\verb|POST /process_query| &
+Generates a letter based on the provided original and enhanced prompts using the LLM. \\
+\midrule
+\verb|POST /process_query| &
+Analyzes the user prompt to extract information and identifies missing fields needed to complete the letter. Uses a fine-tuned transformer model internally. \\
+\midrule
+\verb|POST /search| &
+Searches the FAISS index to retrieve the top K relevant documents based on the query embedding. \\
+\midrule
+\verb|POST /rebuild_knowledge_base| &
+Rebuilds the entire FAISS knowledge base from the source data CSV. \\
+\midrule
+\verb|POST /diagnostics| &
+Runs a diagnostics check on the RAG pipeline, reporting document count, embedding model, sample searches, and data source validation. \\
+\bottomrule
+\end{tabular}
+\caption{Descriptions of API Endpoints in the RAG Pipeline}
+\label{tab:api_endpoints}
+\end{table}
+
+\subsection{Fine-tuned Transformer model for data extraction}
+Roberta (a transformer-based model) is fine-tuned to extract data from the user prompts. This is useful to identify whether any information is missing in the user-given prompt, so that we can ask the user for that information.
+
+The training dataset is curated from a set of 700 official letters into sections using a pattern-based approach. Common phrases and letter structures were used in this.
+
+Figure \ref{fig:4.4} shows a sample of patterns used to structure the letters.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{images/letter_patterns.png}
+    \caption{Lette structuring patterns}
+    \label{fig:4.4}
+\end{figure}
+
+The structure of the curated data is shown below.
+
+\begin{verbatim}
+{
+   "text": string,
+   "entities": {
+     "subject": {
+       "text": string,
+       "start": int,
+       "end": int
+     },
+     "senders_address": {
+       "text": string,
+       "start": int,
+       "end": int
+     },
+     "recipients_address": {
+       "text": string,
+       "start": int,
+       "end": int
+     },
+     "date": {
+       "text": string,
+       "start": int,
+       "end": int
+     }
+   }
+}
+\end{verbatim}
+
+Dataset is then split into training and validation sets.
+
+\subsection{Fine Tuning NER Model}
+The Named Entity Recognition (NER) module plays a crucial role in refining the quality and neutrality of the data embedded into the FAISS index. In this pipeline, the primary goal of the NER step is to eliminate personal or location-specific entities—such as names, institutions, or places—from the body of Sinhala letters. This is essential because retaining such named entities can introduce unintentional bias into the retrieval process, leading to inaccurate or overly specific outputs when users query the system. By removing these entities, the model ensures that the embeddings stored in the index reflect only the structural and contextual essence of the letter—such as whether it is a request, apology, or invitation. The NER module is implemented through a fine-tuning process using a multilingual base model (such as XLM-Roberta), which is enhanced with both rule-based and spaCy-powered components. The code supports configurable training options including batch size, learning rate, and epoch count, and offers flexibility to skip dataset preparation if previously processed. Once fine-tuned, this model effectively identifies and redacts sensitive or domain-specific tokens, making the data suitable for general-purpose use in a generation pipeline. Ultimately, the NER process is critical for maintaining a clean, generalized, and context-focused dataset, which strengthens the reliability and relevance of the entire Sinhala letter generation system. Folloeing are the specifications used in the fine tuning process.
+
+\begin{itemize}
+    \item Base model: xlm-roberta-base
+    \item Training epochs: 3
+    \item Batch size: 8
+    \item Learning rate: 2e-5
+    \item NER enhancements: spaCy integration and rule-based components
+\end{itemize}
+
+\section{Index Creation}
+The FAISS (Facebook AI Similarity Search) indexing library was selected as the foundation for the vector store in the Sinhala letter generation pipeline due to its proven efficiency and scalability for high-dimensional similarity search. In this system, the core challenge lies in retrieving semantically similar letter segments—such as requests, apologies, and invitations—based on natural-language prompts. These letter bodies are preprocessed, stripped of named entities, and embedded as dense vectors. FAISS is particularly suited for this scenario because it supports fast and approximate nearest neighbor (ANN) search with high precision, even in large-scale datasets.
+
+FAISS offers a combination of speed and accuracy that fits well within retrieval-augmented generation (RAG) architectures. When users enter prompts, the system must retrieve relevant content nearly instantly for seamless LLM generation. FAISS handles this efficiently by using indexing techniques such as product quantization, inverted file systems, and flat or hierarchical clustering. This performance characteristic ensures that users receive contextually appropriate and structurally coherent letters in real time. The implementation for creating the vector store is both flexible and modular. A function is used to initialize and persist the FAISS index. It begins by validating whether documents are present for vectorization. If the FAISS option is selected (as it is by default), the function uses the from documents method to create an index from the embedded documents using the chosen embedding model. A storage directory (faiss index) is automatically created if it doesn’t exist, and the vector store is saved locally for reuse.
+
+The design also supports Chroma as an optional alternative, complete with error handling and permission checks. However, FAISS remains the preferred backend due to its speed and effectiveness in large-scale embedding retrieval.
+
+This FAISS-powered vector store becomes the semantic memory of the system—enabling high-quality, context-driven responses through the RAG pipeline and ensuring scalability as more letters are added over time.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{images/index_db_creation.png}
+    \caption{Index creation code}
+    \label{fig:4.4}
+\end{figure}
+
+\section{RAG Pipeline}
+
+\section{Letter Generation Pipeline}
+
+\section{GraphDB integration}
+
+
+\begin{references}
+    \bibliography{references} % argument is your bibliography database(s)
+\end{references}
+
+
+\begin{appendices}
+
+
+\appendiceC{Sample Questionnaire}{App:Ques}
+This is just an example appendix put here to show you how appendices work. Change or remove this to match your project.
+
+
+\appendiceC{Online Journal Interfaces}{App:OnlJou}
+This is just an example appendix put here to show you how appendices work. Change or remove this to match your project.
+
+\appendiceC{How to Extract Bibliographic Entries}{App:GScholar}
+Say you want to cite the paper \textit{Survey on Publicly Available Sinhala Natural Language Processing Tools and Research}.
+\begin{enumerate}
+    \item Navigate to Google Scholar~\footURL{https://scholar.google.com/}.\newline\includegraphics[width=0.85\textwidth]{./images/scholar01.png}
+    \item Paste/type the name of the paper you want to cite in the search box and press enter.\newline\includegraphics[width=0.85\textwidth]{./images/scholar02.png}
+    \item Now click on the small cite icon below the paper description.\newline\includegraphics[width=0.85\textwidth]{./images/scholar03.png}
+    \item From the given options, select \textbf{BibTeX}\newline\includegraphics[width=0.85\textwidth]{./images/scholar04.png}
+    \item Copy the generated \texttt{bib} entry.\newline\includegraphics[width=0.85\textwidth]{./images/scholar05.png}
+    \item Now paste the copied \texttt{bib} entry into your \texttt{bib} file.\newline\includegraphics[width=0.85\textwidth]{./images/scholar06.png}
+\end{enumerate}
+
+Once you have finished the above steps, you can cite the paper as discussed in Section~\ref{Sec:Cite}. For example, now~\citet{de2019survey} should work.  
+
+\end{appendices}
+
+
+
+\end{document}
+
+
+
