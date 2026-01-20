@@ -520,51 +520,91 @@ Runs a diagnostics check on the RAG pipeline, reporting document count, embeddin
 \label{tab:api_endpoints}
 \end{table}
 
-\subsection{Fine-tuned Transformer model for data extraction}
-Roberta (a transformer-based model) is fine-tuned to extract data from the user prompts. This is useful to identify whether any information is missing in the user-given prompt, so that we can ask the user for that information.
+\subsection{Information Extraction Methods}
 
-The training dataset is curated from a set of 700 official letters into sections using a pattern-based approach. Common phrases and letter structures were used in this.
+Information extraction is a critical component of the letter generation pipeline, responsible for parsing user prompts (often informal Sinhala text) into structured fields such as letter type, recipient, subject, and purpose. This research implements and evaluates two distinct extraction approaches: (1) a fine-tuned Named Entity Recognition (NER) model using transformer architectures, and (2) a Large Language Model (LLM) based extraction using few-shot prompting with Aya 8B.
 
-Figure \ref{fig:4.4} shows a sample of patterns used to structure the letters.
+\subsubsection{NER-Based Extraction}
+
+\textbf{Model Architecture and Training}
+
+A Named Entity Recognition model was fine-tuned using XLM-RoBERTa-base (multilingual transformer) to identify and extract structured information from Sinhala letter requests. XLM-RoBERTa was selected for its strong cross-lingual transfer capabilities and proven performance on low-resource languages.
+
+\textbf{Training Dataset Preparation:}
+
+The training dataset was curated from 150 official Sinhala letters using a semi-automated pattern-based approach:
+
+\begin{enumerate}
+    \item \textbf{Pattern Extraction:} Common phrases and structural patterns were identified from the letter corpus (Figure \ref{fig:4.4})
+    \item \textbf{Entity Annotation:} Manual labeling of entity spans for each letter component
+    \item \textbf{Data Structuring:} Conversion to token-level BIO (Begin-Inside-Outside) format
+\end{enumerate}
 
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{images/letter_patterns.png}
-    \caption{Lette structuring patterns}
+    \caption{Letter structuring patterns used for NER training data preparation}
     \label{fig:4.4}
 \end{figure}
 
-The structure of the curated data is shown below.
+\textbf{Entity Schema:}
+
+The NER model was trained to recognize six entity types critical for letter generation:
+
+\begin{verbatim}
+Entity Types:
+- LETTER_TYPE: Letter category (application/request/complaint)
+- RECIPIENT: Intended recipient (e.g., කළමනාකරු, අධ්‍යක්ෂ)
+- SENDER: Letter sender name
+- SUBJECT: Subject line or main topic
+- PURPOSE: Primary intent or reason for writing
+- DATE: Time-related information (deadlines, dates)
+\end{verbatim}
+
+\textbf{Training Configuration:}
+
+\begin{itemize}
+    \item Base model: xlm-roberta-base (270M parameters)
+    \item Training samples: 150 annotated Sinhala letters
+    \item Training epochs: 5
+    \item Batch size: 16
+    \item Learning rate: 2e-5 with linear warmup
+    \item Optimizer: AdamW
+    \item Loss function: Cross-entropy over token classifications
+    \item Validation split: 80/20 train-validation split
+\end{itemize}
+
+\textbf{Post-Processing Pipeline:}
+
+Raw NER outputs undergo structured conversion:
+\begin{enumerate}
+    \item Extract token-level predictions (BIO tags)
+    \item Group consecutive tokens with same entity type
+    \item Resolve entity boundaries and extract spans
+    \item Convert to JSON schema matching downstream requirements
+    \item Validate required fields and apply defaults for missing values
+\end{enumerate}
+
+\subsubsection{LLM-Based Extraction}
+
+\textbf{Schema-First Prompting Architecture}
+
+The LLM-based extraction leverages Aya 8B's instruction-following capabilities through schema-first prompting. This approach does not require training data or model fine-tuning—instead, it provides the model with an explicit JSON schema definition that guides the extraction process.
+
+\textbf{Extraction Schema Definition:}
 
 \begin{verbatim}
 {
-   "text": string,
-   "entities": {
-     "subject": {
-       "text": string,
-       "start": int,
-       "end": int
-     },
-     "senders_address": {
-       "text": string,
-       "start": int,
-       "end": int
-     },
-     "recipients_address": {
-       "text": string,
-       "start": int,
-       "end": int
-     },
-     "date": {
-       "text": string,
-       "start": int,
-       "end": int
-     }
-   }
+    "letter_type": "ලිපි වර්ගය (application/request/complaint)",
+    "recipient": "ලිපිය ලබන්නා",
+    "sender": "ලිපිය යවන්නා",
+    "subject": "ලිපියේ විෂයය",
+    "purpose": "ලිපියේ අරමුණ",
+    "key_details": ["වැදගත් තොරතුරු ලැයිස්තුව"]
 }
 \end{verbatim}
 
-The schema includes inline descriptions in Sinhala for each field, serving as implicit instructions to the model. For example, \texttt{"letter\_type": "ලිපි වර්ගය (application/request/complaint)"} indicates both the field name and expected categories.
+The schema includes inline descriptions in Sinhala for each field, serving as implicit instructions to the model. For example, the field \texttt{letter\_type} includes the Sinhala description and expected categories (application/request/complaint) directly in the schema value.
 
 \textbf{Prompt Construction:}
 
