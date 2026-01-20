@@ -5,11 +5,21 @@
 % When you are using IEEE, you can add IEEEdoi if you want the DOI to be listed in your refernces
 \documentclass[12pt]{uomthesis}
 
+% Unicode and Sinhala font support
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{english}
+\setotherlanguage{sinhala}
+
+% Set fonts that support Sinhala Unicode (Overleaf has these)
+\setmainfont{FreeSerif}
+\newfontfamily\sinhalafontsf{Noto Sans Sinhala}[Scale=MatchLowercase]
+\newfontfamily\sinhalafont{Noto Serif Sinhala}[Scale=MatchLowercase]
 
 \usepackage{packages/lgrind}
 %\usepackage{lgrind}
 \usepackage{cmap}
-\usepackage[T1]{fontenc}
+%\usepackage[T1]{fontenc}  % Commented out - incompatible with fontspec/XeLaTeX
 \pagestyle{plain}
 \usepackage{graphicx}
 \usepackage{amsmath}
