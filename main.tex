@@ -5,16 +5,23 @@
 % When you are using IEEE, you can add IEEEdoi if you want the DOI to be listed in your refernces
 \documentclass[12pt]{uomthesis}
 
-% Unicode and Sinhala font support
+% Unicode and Sinhala font support for XeLaTeX
 \usepackage{fontspec}
 \usepackage{polyglossia}
 \setdefaultlanguage{english}
 \setotherlanguage{sinhala}
 
-% Set fonts that support Sinhala Unicode (Overleaf has these)
+% Set fonts that support Sinhala Unicode
+% If Noto fonts don't work, Overleaf should have these alternatives
 \setmainfont{FreeSerif}
-\newfontfamily\sinhalafontsf{Noto Sans Sinhala}[Scale=MatchLowercase]
-\newfontfamily\sinhalafont{Noto Serif Sinhala}[Scale=MatchLowercase]
+\setsansfont{FreeSans}
+\setmonofont{FreeMono}
+
+% Try to set Sinhala font (if available)
+\newfontfamily\sinhalafont[Script=Sinhala]{Noto Sans Sinhala}
+\newfontfamily\sinhalafontsf[Script=Sinhala]{Noto Sans Sinhala}
+
+% Note: inputenc and fontenc are NOT needed with XeLaTeX (fontspec handles encoding)
 
 \usepackage{packages/lgrind}
 %\usepackage{lgrind}
