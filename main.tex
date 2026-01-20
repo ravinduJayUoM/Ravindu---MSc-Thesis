@@ -121,7 +121,7 @@ Write your abstract here. This document is a model and instructions for \LaTeX{}
 \chapter{Introduction}
 
 \section{Problem Statement}
-This research addresses a critical gap in Sinhala language processing. It aims to create an interactive model that enhances Sinhala text based on specific requirements. While various languages benefit from advanced NLP tools, Sinhala lacks similar resources. The primary objective is to develop a user-friendly, GPT-like model enabling users to refine Sinhala text by eliminating grammatical errors and improving readability. This project does not aim to generate new content but focuses on enhancing existing text. By doing so, it helps the development of NLP tools tailored to Sinhala, offering individuals a valuable resource to elevate the quality of their written communication.
+This research addresses a critical gap in Sinhala language processing. It aims to create an interactive model that enhances Sinhala text based on specific requirements. While various languages benefit from advanced NLP tools, Sinhala lacks similar resources. The primary objective is to develop a user-friendly, interactive language model enabling users to refine Sinhala text by eliminating grammatical errors and improving readability. This project does not aim to generate new content but focuses on enhancing existing text. By doing so, it helps the development of NLP tools tailored to Sinhala, offering individuals a valuable resource to elevate the quality of their written communication.
 
 
 \section{Research Questions}
@@ -138,7 +138,7 @@ How to improve the quality of formal Sinhala text generation in Large Language M
 \end{enumerate}
 
 \section{Aims and Objectives}
-Primary objective of this research is to develop a GPT-like interactive language model for the Sinhala language, capable of enhancing written content according to specific requirements, such as eliminating grammatical errors and improving readability.
+Primary objective of this research is to develop an interactive language model for the Sinhala language, capable of enhancing written content according to specific requirements, such as eliminating grammatical errors and improving readability.
 
 \begin{itemize}
     \item Implement a user-friendly interface that enables individuals to input Sinhala text and receive enhanced versions, ensuring that the tool is easily accessible and usable. • There are multiple challenges associated with text analysis in the Sinhala Language. This study will be able to address these challenges such as linguistic 1 characteristics, and contextual elements in the Sinhala Language. 
@@ -402,8 +402,51 @@ Faiss is a known library for efficient similarity search and clustering of dense
 \subsection{Transformer Model}
 Roberta
 
-\subsection{Text Generation}
-OpenAI - GPT4o
+\subsection{Text Generation: Aya 8B Model}
+
+This research employs the Aya 8B model, an open-source multilingual large language model, as the primary text generation engine. The selection of Aya 8B over commercial alternatives like GPT-4 or Claude is driven by several research considerations:
+
+\subsubsection{Rationale for Aya 8B Selection}
+
+\textbf{1. Explicit Low-Resource Language Support}
+
+Aya 8B is specifically designed and trained on 101 languages, with explicit inclusion of low-resource languages including Sinhala. Unlike general-purpose multilingual models that may include Sinhala as a byproduct of web scraping, Aya's training methodology deliberately curates and balances low-resource language data. This makes it an ideal candidate for evaluating whether purpose-built multilingual models can effectively handle formal Sinhala text generation tasks.
+
+\textbf{2. Benchmarking Against Baseline Multilingual Models}
+
+A key objective of this research is to critically assess the extent to which current multilingual language models can support formal writing tasks in low-resource languages. By using Aya 8B—a model explicitly trained for multilingual capability rather than English-centric performance—we can evaluate whether state-of-the-art multilingual architectures have reached sufficient maturity to handle domain-specific Sinhala text generation when augmented with retrieval mechanisms.
+
+\textbf{3. Reproducibility and Accessibility}
+
+As an open-source model deployable on standard hardware (8 billion parameters, 4-bit quantized to 4.8GB), Aya 8B enables reproducible research. Other researchers studying low-resource NLP can replicate this study without requiring expensive API access or proprietary model licenses. This aligns with the broader goal of democratizing NLP research for under-resourced languages.
+
+\textbf{4. Architectural Transparency}
+
+Open-source models allow detailed analysis of failure modes and model behavior, which is crucial for understanding limitations in low-resource language support. Commercial black-box APIs provide limited insight into why certain Sinhala constructions fail or succeed.
+
+\subsubsection{Model Specifications}
+
+\begin{itemize}
+    \item \textbf{Model Family:} Aya-101 multilingual series
+    \item \textbf{Parameters:} 8 billion
+    \item \textbf{Languages Supported:} 101 languages including Sinhala
+    \item \textbf{Context Window:} 8,192 tokens
+    \item \textbf{Quantization:} 4-bit for memory efficiency (4.8GB total)
+    \item \textbf{Architecture:} Transformer-based decoder
+    \item \textbf{Training Data:} Multilingual corpus with balanced low-resource language sampling
+\end{itemize}
+
+\subsubsection{Deployment via Ollama}
+
+The model is deployed using Ollama, an open-source LLM inference framework that provides:
+\begin{itemize}
+    \item Local inference without external API dependencies
+    \item REST API for seamless integration with the RAG pipeline
+    \item Efficient model loading and memory management
+    \item Support for multiple concurrent requests
+\end{itemize}
+
+This deployment approach ensures the system remains operational independent of third-party service availability, which is critical for research continuity and long-term reproducibility.
 
 \subsection{MetaData Filtering}
 Neo4j
@@ -421,7 +464,7 @@ The use of a Retrieval-Augmented Generation (RAG) approach significantly improve
 Indexing and embedding is done using FAISS (Facebook AI Similarity Search), which is a highly efficient indexing library specifically designed for rapid similarity search in dense vector embeddings. It supports high-dimensional embedding spaces, enabling swift retrieval of semantically similar data. FAISS employs various optimized indexing methods, including clustering-based quantization and hierarchical structures, facilitating efficient approximate nearest neighbor searches. This makes FAISS especially suitable for the letter-generation pipeline in Sinhala, where categorized and cleaned letter sections are embedded into vector representations. Leveraging FAISS indexing allows rapid retrieval of structurally and contextually relevant letter bodies during prompt-based generation tasks, significantly improving response accuracy and speed within retrieval-augmented generation (RAG) systems. Consequently, FAISS’s effectiveness in managing and retrieving large-scale embeddings ensures the pipeline consistently generates coherent, contextually appropriate Sinhala letters tailored to user prompts. Detailed explanation on how this is done is explained in the following section.
 
 \section{Generation Pipeline}
-The generation pipeline employs retrieval-augmented generation (RAG), where the most similar letter structures are retrieved from the FAISS-indexed dataset. After retrieval, the pipeline utilizes prompt engineering techniques—discussed in detail in the subsequent section—to optimize the prompt provided to GPT-4.0, the generative large language model (LLM) used in this experiment. Following generation, the output is evaluated by users, and the prompt is refined based on their feedback. Acceptable outputs undergo named entity recognition (NER) processing to remove entities before being re-embedded and added back to the FAISS index, continuously enhancing the dataset's quality and breadth.
+The generation pipeline employs retrieval-augmented generation (RAG), where the most similar letter structures are retrieved from the FAISS-indexed dataset. After retrieval, the pipeline utilizes prompt engineering techniques—discussed in detail in the subsequent section—to optimize the prompt provided to Aya 8B, the multilingual large language model (LLM) used in this experiment. Following generation, the output is evaluated by users, and the prompt is refined based on their feedback. Acceptable outputs undergo named entity recognition (NER) processing to remove entities before being re-embedded and added back to the FAISS index, continuously enhancing the dataset's quality and breadth.
 
 \section{Evaluation Strategy}
 The evaluation of the generated Sinhala letters follows a two-pronged approach. Firstly, an internal feedback loop embedded in the pipeline allows users to rate the quality of the generated output. Based on this rating, the prompt is either optimized for future use or the letter is accepted and added—after NER processing—to the FAISS index. Secondly, to ensure accuracy and cultural appropriateness, human evaluation is conducted by five experts involved in various aspects of Sinhala writing. Given the limitations of current large language models in handling Sinhala effectively, human judgment is essential for a comprehensive assessment. Additional feedback is also gathered from broader user groups to validate the overall performance of the pipeline.
