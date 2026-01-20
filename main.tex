@@ -564,10 +564,78 @@ The structure of the curated data is shown below.
 }
 \end{verbatim}
 
-Dataset is then split into training and validation sets.
+The schema includes inline descriptions in Sinhala for each field, serving as implicit instructions to the model. For example, \texttt{"letter\_type": "ලිපි වර්ගය (application/request/complaint)"} indicates both the field name and expected categories.
 
-\subsection{Fine Tuning NER Model}
-The Named Entity Recognition (NER) module plays a crucial role in refining the quality and neutrality of the data embedded into the FAISS index. In this pipeline, the primary goal of the NER step is to eliminate personal or location-specific entities—such as names, institutions, or places—from the body of Sinhala letters. This is essential because retaining such named entities can introduce unintentional bias into the retrieval process, leading to inaccurate or overly specific outputs when users query the system. By removing these entities, the model ensures that the embeddings stored in the index reflect only the structural and contextual essence of the letter—such as whether it is a request, apology, or invitation. The NER module is implemented through a fine-tuning process using a multilingual base model (such as XLM-Roberta), which is enhanced with both rule-based and spaCy-powered components. The code supports configurable training options including batch size, learning rate, and epoch count, and offers flexibility to skip dataset preparation if previously processed. Once fine-tuned, this model effectively identifies and redacts sensitive or domain-specific tokens, making the data suitable for general-purpose use in a generation pipeline. Ultimately, the NER process is critical for maintaining a clean, generalized, and context-focused dataset, which strengthens the reliability and relevance of the entire Sinhala letter generation system. Folloeing are the specifications used in the fine tuning process.
+\textbf{Prompt Construction:}
+
+The schema-first prompt combines structured instructions and the user's input:
+
+\begin{verbatim}
+"මෙම සිංහල ලිපි ඉල්ලීමෙන් ප්‍රධාන තොරතුරු උපුටා ගන්න.
+
+පහත JSON ආකෘතිය භාවිතා කරන්න:
+{
+    \"letter_type\": \"ලිපි වර්ගය (application/request/complaint)\",
+    \"recipient\": \"ලිපිය ලබන්නා\",
+    \"sender\": \"ලිපිය යවන්නා\",
+    \"subject\": \"ලිපියේ විෂයය\",
+    \"purpose\": \"ලිපිය ලියන අරමුණ\",
+    \"key_details\": [\"වැදගත් තොරතුරු ලැයිස්තුව\"]
+}
+
+දැන් මෙම ඉල්ලීම විශ්ලේෂණය කරන්න:
+[USER PROMPT]
+
+වලංගු JSON පමණක් ප්‍රතිදානය කරන්න. අනෙකුත් පැහැදිලි කිරීම් අවශ්‍ය නැත."
+\end{verbatim}
+
+\textbf{Output Validation and Cleaning:}
+
+LLM outputs undergo several validation steps:
+\begin{enumerate}
+    \item Remove markdown code fences (\verb|```json|)
+    \item Parse JSON and validate structure
+    \item Coerce missing fields to empty strings/arrays
+    \item Normalize letter\_type to predefined categories
+    \item Validate Sinhala Unicode encoding
+\end{enumerate}
+
+\textbf{Key Advantages of Schema-First Approach:}
+
+\begin{itemize}
+    \item \textbf{Simplicity:} No need to maintain multiple example pairs
+    \item \textbf{Consistency:} Schema serves as the single source of truth
+    \item \textbf{Maintainability:} Field changes require only schema updates
+    \item \textbf{Token Efficiency:} Shorter prompts (schema only vs. schema + examples)
+    \item \textbf{Multilingual Clarity:} Sinhala field descriptions guide extraction directly
+\end{itemize}
+
+\textbf{Code Implementation:}
+
+\begin{verbatim}
+def _extract_with_llm(self, text: str) -> dict:
+    """Extract information using Aya 8B via Ollama"""
+    extraction_prompt = f"""
+    මෙම සිංහල ලිපි ඉල්ලීමෙන් ප්‍රධාන තොරතුරු උපුටා ගන්න.
+    
+    පහත JSON ආකෘතිය භාවිතා කරන්න:
+    {self.extraction_schema}
+    
+    දැන් මෙම ඉල්ලීම විශ්ලේෂණය කරන්න:
+    {text}
+    
+    වලංගු JSON පමණක් ප්‍රතිදානය කරන්න:
+    """
+    response = ollama.chat(
+        model="aya:8b",
+        messages=[{"role": "user", "content": extraction_prompt}]
+    )
+    extracted = json.loads(self._clean_json_text(
+        response['message']['content']))
+    return self._coerce_to_schema(extracted)
+\end{verbatim}
+
+
 
 \begin{itemize}
     \item Base model: xlm-roberta-base
