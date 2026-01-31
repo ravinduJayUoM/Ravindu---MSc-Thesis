@@ -562,10 +562,10 @@ The base XLM-RoBERTa model is fine-tuned on Sinhala letter data for token-level 
 \textbf{Dual-Purpose Design:}
 
 \textbf{1. Information Extraction NER:}
-Extracts structured fields from informal user prompts to populate letter templates. For example, from the prompt \textit{"මම අසනිප් නිසා නිවාඩුවක් ඕන"}, the model identifies \texttt{letter\_type=request} and \texttt{purpose=අසනීප නිවාඩුවක්}.
+Extracts structured fields from informal user prompts to populate letter templates. For example, from the prompt "මම අසනීපෙන් නිසා නිවාඩුවක් අවශ්‍යයි", the model identifies \texttt{letter\_type=request} and \texttt{purpose}="අසනීප නිවාඩුවක්".
 
 \textbf{2. Privacy-Preserving NER:}
-Detects and replaces personal entities (names, locations, organizations) in the corpus before embedding. This ensures FAISS retrieval focuses on structural and semantic patterns rather than entity-specific content. Original text \textit{"මම සුනිල් පෙරේරා මොරටුව විශ්වවිද්‍යාලයට..."} becomes \textit{"මම <PERSON> <ORGANIZATION>ට..."} before vectorization.
+Detects and replaces personal entities (names, locations, organizations) in the corpus before embedding. This ensures FAISS retrieval focuses on structural and semantic patterns rather than entity-specific content. Original text "මම සුනිල් පෙරේරා මොරටුව විශ්වවිද්‍යාලයට..." becomes "මම <PERSON> <ORGANIZATION>ට..." before vectorization.
 
 \textbf{Design Rationale:}
 
@@ -674,8 +674,8 @@ To enable automatic filtering, the system infers metadata constraints from user 
 
 \begin{itemize}
     \item Extracted \texttt{letter\_type} maps to \texttt{letter\_category} filter
-    \item Keywords like \textit{"ආකෘතිය"} (template) trigger \texttt{doc\_type=structure} filter
-    \item Keywords like \textit{"විධිමත්"} (formal) trigger \texttt{register=very\_formal} filter
+    \item Keywords like "ආකෘතිය" (template) trigger \texttt{doc\_type=structure} filter
+    \item Keywords like "විධිමත්" (formal) trigger \texttt{register=very\_formal} filter
 \end{itemize}
 
 \textbf{Quality-Based Filtering:}
