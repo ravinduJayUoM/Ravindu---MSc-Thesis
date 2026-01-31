@@ -11,27 +11,26 @@
 \setdefaultlanguage{english}
 \setotherlanguage{sinhala}
 
-% Set fonts that support Sinhala Unicode
 \setmainfont{FreeSerif}
 \setsansfont{FreeSans}
-% Use a monospace font that supports Sinhala for verbatim blocks
-\setmonofont{Noto Sans Mono}[
-    Scale=0.9,
-    % Fallback to Noto Sans Sinhala for Sinhala characters
-    UprightFont=*,
-    BoldFont=*-Bold,
-]
+\setmonofont{FreeMono}
 
 % Define Sinhala font family
-\newfontfamily\sinhalafont[Script=Sinhala]{Noto Sans Sinhala}
-\newfontfamily\sinhalafontsf[Script=Sinhala]{Noto Sans Sinhala}
+\newfontfamily\sinhalafont{Noto Sans Sinhala}
+\newfontfamily\sinhalafontsf{Noto Sans Sinhala}
+\newfontfamily\sinhalacodefont{FreeSerif}
 
-% Make verbatim use a font that supports Sinhala
 \usepackage{fancyvrb}
-\fvset{fontfamily=\ttfamily, fontsize=\small}
-% Redefine verbatim to support Sinhala
-\DefineVerbatimEnvironment{verbatim}{Verbatim}{fontfamily=\sinhalafont}
+\DefineVerbatimEnvironment{SinhalaVerbatim}{Verbatim}{
+  formatcom=\sinhalacodefont,
+  fontsize=\small,
+  breaklines=true
+}
 
+% Make verbatim blocks use Sinhala font
+\makeatletter
+\def\verbatim@font{\normalfont\sinhalafont\small}
+\makeatother
 % Note: inputenc and fontenc are NOT needed with XeLaTeX (fontspec handles encoding)
 
 \usepackage{packages/lgrind}
@@ -1044,9 +1043,9 @@ Detected entities are replaced with generic placeholders to preserve sentence st
 \end{verbatim}
 
 \textbf{After NER Privacy Processing:}
-\begin{verbatim}
+\begin{SinhalaVerbatim}
 "මම <person>. <organization>ට <date> සහභාගි වීමට කැමතියි."
-\end{verbatim}
+\end{SinhalaVerbatim}
 
 This anonymized text is then embedded into FAISS, ensuring retrieval focuses on intent (enrollment request) rather than specific entities.
 
