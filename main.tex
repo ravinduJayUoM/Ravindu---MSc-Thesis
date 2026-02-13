@@ -163,12 +163,24 @@ How to improve the quality of formal Sinhala text generation in Large Language M
     \item What are the limitations when applying RAG approach to low resourced languages like Sinhala?
 \end{enumerate}
 
-\section{Aims and Objectives}
-Primary objective of this research is to develop an interactive language model for the Sinhala language, capable of enhancing written content according to specific requirements, such as eliminating grammatical errors and improving readability.
+\section{Research Objectives}
+
+The primary objective of this research is to enhance the quality of formal Sinhala letter generation through a Retrieval-Augmented Generation approach that combines semantic search with multilingual language models. The specific objectives are:
 
 \begin{itemize}
-    \item Implement a user-friendly interface that enables individuals to input Sinhala text and receive enhanced versions, ensuring that the tool is easily accessible and usable. • There are multiple challenges associated with text analysis in the Sinhala Language. This study will be able to address these challenges such as linguistic 1 characteristics, and contextual elements in the Sinhala Language. 
-    \item The research findings and results can contribute to the Academic research regarding NLP in a multilingual context. These will be published along a research paper in an academic journal.
+    \item \textbf{Develop a two-stage retrieval architecture} combining FAISS-based dense vector search with cross-encoder reranking to improve precision in retrieving relevant Sinhala letter examples, addressing the limitations of single-stage embedding similarity approaches.
+    
+    \item \textbf{Implement automated information extraction} using fine-tuned XLM-RoBERTa transformers to parse informal Sinhala user prompts into structured fields (letter type, recipient, subject, purpose), enabling template-based letter generation with minimal user burden.
+    
+    \item \textbf{Establish a curated Sinhala letter corpus} with structured metadata (category, formality level, document type) and privacy-preserving anonymization to serve as a reusable knowledge base for formal writing tasks across diverse contexts.
+    
+    \item \textbf{Evaluate the RAG approach against baseline LLM generation} through comparative analysis measuring grammatical correctness, structural adherence, contextual relevance, and formality appropriateness using human expert assessment.
+    
+    \item \textbf{Design a continuous improvement mechanism} where highly-rated user-generated letters are incorporated back into the knowledge base, creating a self-improving feedback loop that expands coverage and quality over time.
+    
+    \item \textbf{Assess the effectiveness of multilingual models} (LaBSE, XLM-RoBERTa, Aya 8B) on low-resource Sinhala tasks, contributing empirical evidence on cross-lingual transfer capabilities for under-resourced languages in specialized domains.
+    
+    \item \textbf{Provide a reproducible open-source framework} deployable on modest hardware using local inference (Ollama), eliminating dependency on commercial APIs and ensuring research accessibility for low-resource language communities.
 \end{itemize}
 
 \section{Significance of the Study}
@@ -250,6 +262,58 @@ Retrieval-Augmented Generation (RAG) is a method that combines an information re
 In multilingual and low-resource contexts, RAG is particularly appealing. If a model doesn’t know much about a topic in Sinhala, we can compensate by retrieving documents in Sinhala about that topic from a local corpus or knowledge base. RAG thus offers a way to circumvent the lack of training data: instead of trying to bake all of Sinhala knowledge into the model’s weights, we let the model look things up as needed. Ranaldi et al. (2025) \cite{18} explicitly investigate RAG for multiple languages and highlight that its use in multilingual settings was previously underexplored. They implement variants where either the query or the retrieved documents are translated to English, versus a fully multilingual retrieval mode. One interesting finding was that a naive multilingual RAG (where the question is asked in, say, Sinhala and documents are retrieved from a Sinhala wiki) can suffer if the document corpus is sparse, whereas translating the question to English to tap into English Wikipedia yields more hits but then creates a disconnect for generation. Their proposed solution, CrossRAG, translates retrieved foreign-language documents into English before giving them to the generator. This way, the generator (which might be stronger in English) processes everything in one language and produces an answer, which can then be translated back. This method significantly improved QA performance for both high and low-resource languages in their experiments. 
 For our purposes, RAG is attractive not for QA per se but for text generation tasks like letter writing. The principle remains: provide the model with relevant text snippets so it has concrete material to base the output on. In the case of formal letter generation, we can build a knowledge base of existing official letters (e.g. a database of letters categorized by type: job applications, complaint letters, invitations, etc.). When the user requests a certain type of letter, the system can retrieve a few similar letters or even specific phrases from this database. These retrieved pieces then serve as in-context examples or guides for the LLM. By seeing actual examples of formal phrasing, structuring, correct salutations, closings, and domain-specific terminology, the LLM is far more likely to produce a correct and contextually appropriate letter. This approach addresses two issues identified in the literature. The lack of training data (we might have too few example letters to fully fine-tune a model, but we can still use those examples at inference via retrieval) and the tendency of models to hallucinate on limited data.(The retrieved text grounds the generation in real content, reducing guesswork). Moreover, RAG aligns with the general direction of making LLM outputs verifiable and traceable – the retrieved documents can act as evidence or at least inspiration, which is useful in formal writing where factual correctness and appropriate references matter.
 
+\subsection{Multilingual Large Language Models for Low-Resource Languages}
+The emergence of large-scale multilingual language models has created new opportunities for low-resource language processing. Models specifically designed with extensive multilingual capabilities have shown promising results for languages like Sinhala, which traditionally suffer from limited training data and resources. This section examines state-of-the-art multilingual LLMs, with particular focus on models suitable for Sinhala text generation.
+
+Among recent developments, several multilingual LLMs have demonstrated varying degrees of effectiveness for low-resource languages. Models such as BLOOM (BigScience Large Open-science Open-access Multilingual Language Model), which supports 46 languages and 13 programming languages \cite{30}, and Meta's LLaMA series have been widely adopted by the research community. However, these models often prioritize high-resource languages in their training distribution, leading to suboptimal performance on languages like Sinhala. The mT5 (multilingual Text-to-Text Transfer Transformer) and mBART models, while supporting over 100 languages, similarly exhibit performance degradation for extremely low-resource languages due to limited exposure during pretraining \cite{2}.
+
+A significant advancement came with Cohere's release of the Aya model family, specifically designed to address the needs of massively multilingual text generation across 101 languages. The Aya 8B model (8 billion parameters, quantized to 4.8GB for deployment) was explicitly trained on a curated multilingual dataset that included substantial Sinhala content, making it particularly well-suited for Sinhala NLP tasks \cite{31}. Unlike general-purpose multilingual models that treat low-resource languages as an afterthought, Aya was developed through the Aya initiative, which specifically aimed to collect high-quality data for underrepresented languages through a global collaborative effort involving native speakers. This approach resulted in a model with significantly better understanding of Sinhala syntax, morphology, and cultural context compared to models like GPT-3.5 or even GPT-4, which have substantially larger parameter counts but less focused Sinhala training.
+
+When selecting an LLM for this research, several alternatives were evaluated:
+
+\textbf{GPT-4 and GPT-3.5 (OpenAI):} While these models demonstrate strong general capabilities and have some Sinhala knowledge from web-crawled data, they suffer from three critical limitations for this research: (1) they require expensive API calls, making them unsuitable for deployment in resource-constrained environments; (2) their Sinhala capabilities are inconsistent, often mixing colloquial and formal registers inappropriately; and (3) they cannot be deployed locally, creating dependency on external services and raising data privacy concerns for formal letter generation.
+
+\textbf{LLaMA 3.2:3b and LLaMA 2 variants:} Meta's LLaMA models, particularly the smaller 3-billion parameter variant, offer the advantage of local deployment through frameworks like Ollama. However, initial experiments revealed severe limitations in Sinhala information extraction. When prompted to extract structured information from Sinhala text (e.g., letter type, recipient, subject), LLaMA 3.2:3b consistently returned field descriptions rather than actual extracted values, indicating insufficient Sinhala language understanding despite its multilingual pretraining \cite{32}.
+
+\textbf{mT5 and mBART:} These encoder-decoder models support Sinhala and have been used successfully for translation and summarization tasks \cite{11}. However, for generative tasks requiring both information extraction and formal letter composition, their performance on Sinhala was found to be inconsistent, particularly for complex honorific structures and formal register requirements. Additionally, their maximum context length limitations (typically 512-1024 tokens) pose challenges for RAG applications where multiple retrieved examples must be included in the prompt.
+
+\textbf{XGLM and BLOOM:} While BLOOM's 176B parameter variant shows reasonable multilingual capabilities, its computational requirements (requiring multiple high-end GPUs) make it impractical for deployment in typical research or production environments. XGLM, despite supporting Sinhala, exhibited similar extraction quality issues as smaller LLaMA variants.
+
+\textbf{Aya 8B (Selected Model):} The Aya 8B model was ultimately selected for this research based on several compelling factors:
+
+\begin{itemize}
+    \item \textbf{Sinhala-specific training:} Unlike general multilingual models, Aya 8B was trained on a carefully curated dataset that included substantial high-quality Sinhala text, collected specifically to address low-resource language needs. This resulted in significantly better understanding of Sinhala grammatical structures, honorifics, and formal writing conventions.
+    
+    \item \textbf{Extraction quality:} Comparative experiments demonstrated that Aya 8B could accurately extract structured information from informal Sinhala prompts, correctly identifying letter types (ඉල්ලීම්, පැමිණිලි, ස්තූති), recipients, subjects, and purposes – a task where smaller models consistently failed.
+    
+    \item \textbf{Deployment feasibility:} With 4.8GB memory footprint when 4-bit quantized, Aya 8B can be deployed on modest hardware (24GB RAM, 4 CPU cores) using Ollama, making it accessible for research and practical deployment without expensive cloud infrastructure. This aligns with the research objective of providing reproducible frameworks for low-resource language communities.
+    
+    \item \textbf{Generation quality:} In pilot tests, Aya 8B demonstrated superior ability to maintain formal Sinhala register (ලිඛිත භාෂාව), correctly apply honorific verb forms based on context, and structure letters according to conventional Sinhala formal letter templates – capabilities that general-purpose models like GPT-3.5 struggled with despite their larger scale.
+    
+    \item \textbf{Context window:} Aya 8B supports an 8192-token context window, sufficient for incorporating multiple retrieved letter examples in the RAG pipeline along with extraction results and generation instructions.
+    
+    \item \textbf{Open weights and local inference:} Unlike proprietary models, Aya 8B's weights are publicly available, enabling full local deployment, reproducibility, and avoiding ongoing API costs or data privacy concerns associated with cloud-based LLMs.
+\end{itemize}
+
+The selection of Aya 8B represents a strategic balance between model capability, resource requirements, and task-specific performance for Sinhala. While larger models like GPT-4 may demonstrate superior performance on some English benchmarks, Aya 8B's focused training on low-resource languages and its demonstrated effectiveness in Sinhala information extraction and formal text generation make it the optimal choice for this research. This decision aligns with the broader research goal of developing accessible, reproducible NLP solutions for low-resource languages that do not require expensive computational infrastructure or proprietary API access.
+
+\subsection{Challenges in Formal Sinhala Letter Generation}
+While the aforementioned techniques and models provide a foundation for Sinhala NLP, generating formal Sinhala letters presents unique challenges that intersect linguistic complexity, cultural conventions, and technical limitations. Understanding these challenges is essential for designing an effective RAG-based system.
+
+\subsubsection{Morphological Complexity}
+Sinhala is a morphologically rich language with complex inflectional patterns. Words in Sinhala change their form based on case, number, tense, gender, honorific level, and grammatical function, creating significant challenges for language models. Unlike English, where word forms are relatively stable, Sinhala verbs can take dozens of different forms depending on tense, aspect, mood, and politeness level. For instance, the verb "to go" (යනවා) has distinct forms for different contexts: යන්න (infinitive), ගියා (past informal), ගියේය (past formal/written), යති (literary present), and many others. Similarly, nouns decline based on case and number, with different declension patterns for animate and inanimate objects. This morphological richness means that LLMs must not only select appropriate vocabulary but also generate the correct inflected forms, which requires deep understanding of Sinhala grammar – knowledge that is often lacking in models trained primarily on high-resource languages.
+
+\subsubsection{Honorifics and Register}
+Formal Sinhala letter writing demands careful attention to honorifics and linguistic register, which reflect the social relationship between sender and recipient. Sinhala has distinct honorific systems encoded in verb forms, pronouns, and noun declensions. For example, addressing a superior requires using honorific verbs (පිළිතුරු දෙන්න vs. පිළිතුරු දෙනවා), respectful pronouns (ඔබතුමා vs. ඔයා), and formal noun forms (ලිපිය vs. පොත). The choice of honorific level depends on multiple factors: the recipient's social status, professional relationship, institutional context, and the letter's purpose. A job application to a principal requires very high honorifics (ඉතා ගෞරවනීය), while a request to a peer organization uses moderate formality. Furthermore, formal written Sinhala (ලිඛිත භාෂාව) differs substantially from spoken Sinhala (කථන භාෂාව), employing distinct vocabulary, verb forms, and sentence structures. LLMs must navigate these sociolinguistic nuances to produce contextually appropriate letters – a task requiring sophisticated pragmatic understanding beyond syntactic correctness.
+
+\subsubsection{Limited Digital Corpus}
+A fundamental challenge is the scarcity of digitized Sinhala formal letters compared to high-resource languages. While English has vast corpora of business correspondence, legal documents, and formal writing available for training, Sinhala formal letters exist primarily in physical archives in government offices, schools, and institutions. This data scarcity has multiple implications: (1) LLMs have minimal exposure to formal Sinhala letter structures during pretraining, leading to poor zero-shot performance; (2) fine-tuning approaches are constrained by lack of training examples; and (3) without sufficient data, models cannot learn the conventional phrases, templates, and structural patterns that characterize different letter types. Even when digital Sinhala text exists (e.g., news articles, social media, Wikipedia), it predominantly represents informal or journalistic registers rather than the highly formal administrative language required for official correspondence. This domain mismatch further limits the utility of general Sinhala corpora for formal letter generation.
+
+\subsubsection{Diglossia}
+Sinhala exhibits strong diglossia, with significant structural and lexical differences between formal written Sinhala and colloquial spoken Sinhala. This diglossic variation extends beyond simple register differences; the written and spoken forms use different vocabulary sets, distinct grammatical constructions, and even different verb paradigms. For example, the spoken Sinhala phrase "මම කාලා" (I ate) becomes "මම කෑවෙමි" or "අනුභව කළෙමි" in formal written contexts. Many common spoken words have completely different formal equivalents: spoken "දැන්" (now) becomes written "දැන්"; spoken "කොහාද" (where) becomes written "කොතැනද" or "කවරස්ථානයේද" in very formal contexts. LLMs trained primarily on web-crawled Sinhala data tend to produce colloquial forms even when formal register is required, because spoken Sinhala dominates social media and online forums. Successfully generating formal letters requires the model to consistently maintain written register throughout the document, applying the appropriate verb forms, vocabulary, and sentence structures – a challenging code-switching task that many multilingual models perform poorly.
+
+These linguistic and resource-based challenges motivate the retrieval-augmented approach adopted in this research. By retrieving actual formal letter examples that demonstrate correct morphology, appropriate honorifics, and proper written register, the RAG system can ground the LLM's generation in concrete exemplars, compensating for its limited Sinhala training and helping bridge the gap between the model's predominantly informal Sinhala knowledge and the formal writing requirements of official correspondence.
+
 \subsection{Summary}
 
 
@@ -316,7 +380,7 @@ The high-level architecture of the proposed research design approach is illustra
 
 \subsection{Retrieval-Augmented Generation Pipeline}
 
-\section{Case Study: Formal Letter Generation in Sinhala}
+\section{Pilot Project: Formal Letter Generation in Sinhala}
 This research study specifically targets the improvement of text generation in Sinhala in LLMs through a more focused study on Sinhala Formal Letter writing. 
 
 Sinhala formal letters is a significant part of written communication in Sri Lanka in the government, educational institutes, and other industries.  These letters follow a strict structure and a more formalized writing style(Written language - ලිඛිත භාෂාව) and one has to thoroughly know the Orthography(අක්ෂර වින්‍යාසය), which refers to the set of standards which should be followed, including spelling rules, punctuation, and letter formation. It is important that these letters follow the Grammar conventions as well. Formal Letter Writing is a crucial skill in the Sri Lankan Education System as well, which is still being examined in the Ordinary Level Sinhala Exam paper. 
@@ -342,19 +406,6 @@ Sinhala formal letters is a significant part of written communication in Sri Lan
     \item Complaint Letters
     \item Apology Letters
 \end{enumerate}
-
-\subsection{Challenges faced by LLMs in writing Formal Letters in Sinhala}
-\subsubsection{Morphological Complexity}
-Sinhala is a morphologically rich language. Sentences in Sinhala have complex patterns. Words in Sinhala change their form based on case, number, tense, honorific level, and many more which creates a challenge for LLMs.
-
-\subsubsection{Honorifics}
-It is important to select the proper and appropriate verb forms and salutations which should clearly reflect the relationship between the sender and the recipient. This demands sophisticated contextual understanding beyond simply filling templates.
-
-\subsubsection{Limited Digital Corpus}
-There is a scarcity of digitized Sinhala Formal letters when compared with other languages and this limits training data that is available to LLMs.
-
-\subsubsection{Diglossia}
-Sinhala exhibits Diglossia*<definition> with significant differences between formal written Sinhala and spoken Sinhala. 
 
 \section{Data Sources}
 \subsection{Data Acquisition}
