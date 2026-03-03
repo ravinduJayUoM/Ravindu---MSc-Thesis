@@ -299,6 +299,31 @@ When selecting an LLM for this research, several alternatives were evaluated:
 
 The selection of Aya 8B represents a strategic balance between model capability, resource requirements, and task-specific performance for Sinhala. While larger models like GPT-4 may demonstrate superior performance on some English benchmarks, Aya 8B's focused training on low-resource languages and its demonstrated effectiveness in Sinhala information extraction and formal text generation make it the optimal choice for this research. This decision aligns with the broader research goal of developing accessible, reproducible NLP solutions for low-resource languages that do not require expensive computational infrastructure or proprietary API access.
 
+\subsection{Structure of Sinhala Formal Letters}
+Sinhala formal letters follow a strict structural convention that must be maintained for the letter to be considered properly formatted. The standard structure includes several mandatory components arranged in a specific order. Figure \ref{fig:3.2} illustrates the typical layout of a formal Sinhala letter. These structural elements are not merely stylistic choices but represent deeply ingrained conventions in Sri Lankan administrative and educational contexts. Deviation from this structure can result in a letter being perceived as unprofessional or inappropriate.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.75\textwidth,keepaspectratio]{images/letter_structure.png}
+    \caption{Structure of Sinhala Formal Letters}
+    \label{fig:3.2}
+\end{figure}
+
+\subsection{Categories of Sinhala Formal Letters}
+Formal Sinhala letters can be categorized into several distinct types, each with specific purposes and slightly different conventions. Understanding these categories is essential for generating contextually appropriate letters, as each type has characteristic vocabulary, tone, and structural variations. The main categories include:
+
+\begin{enumerate}
+    \item Request Letters (ඉල්ලීම් ලිපි) - Used to formally request information, permissions, resources, or actions from authorities or institutions.
+    \item Invitation Letters (ආරාධනා ලිපි) - Formal invitations to events, ceremonies, or meetings.
+    \item Thank You Letters (ස්තූති ලිපි) - Expressing formal gratitude for assistance, support, or participation.
+    \item Recommendation Letters (නිර්දේශ ලිපි) - Providing formal recommendations for individuals for employment, education, or other purposes.
+    \item Inquiry Letters (විචාරණ ලිපි) - Seeking information or clarification on specific matters.
+    \item Transfer Letters (මාරු ලිපි) - Requesting or notifying transfers of position, location, or responsibility.
+    \item Leave Letters (නිවාඩු ලිපි) - Formally requesting time off from work or educational institutions.
+    \item Complaint Letters (පැමිණිලි ලිපි) - Lodging formal complaints about services, conduct, or situations.
+    \item Apology Letters (සමාව ඉල්ලීමේ ලිපි) - Offering formal apologies for mistakes, delays, or misconduct.
+\end{enumerate}
+
 \subsection{Challenges in Formal Sinhala Letter Generation}
 While the aforementioned techniques and models provide a foundation for Sinhala NLP, generating formal Sinhala letters presents unique challenges that intersect linguistic complexity, cultural conventions, and technical limitations. Understanding these challenges is essential for designing an effective RAG-based system.
 
@@ -385,29 +410,7 @@ The high-level architecture of the proposed research design approach is illustra
 \section{Pilot Project: Formal Letter Generation in Sinhala}
 This research study specifically targets the improvement of text generation in Sinhala in LLMs through a more focused study on Sinhala Formal Letter writing. 
 
-Sinhala formal letters is a significant part of written communication in Sri Lanka in the government, educational institutes, and other industries.  These letters follow a strict structure and a more formalized writing style(Written language - ලිඛිත භාෂාව) and one has to thoroughly know the Orthography(අක්ෂර වින්‍යාසය), which refers to the set of standards which should be followed, including spelling rules, punctuation, and letter formation. It is important that these letters follow the Grammar conventions as well. Formal Letter Writing is a crucial skill in the Sri Lankan Education System as well, which is still being examined in the Ordinary Level Sinhala Exam paper. 
-
-\subsection{Structure of Sinhala Formal Letters}
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.75\textwidth,keepaspectratio]{images/letter_structure.png}
-    \caption{Structure of Sinhala Formal Letters}
-    \label{fig:3.2}
-\end{figure}
-
-\subsection{Categories of Sinhala Formal Letters}
-
-\begin{enumerate}
-    \item Request Letters
-    \item Invitation Letters
-    \item Thank You Letters
-    \item Recommendation Letters
-    \item Inquiry Letters
-    \item Transfer Letters
-    \item Leave Letters
-    \item Complaint Letters
-    \item Apology Letters
-\end{enumerate}
+Sinhala formal letters is a significant part of written communication in Sri Lanka in the government, educational institutes, and other industries.  These letters follow a strict structure and a more formalized writing style(Written language - ලිඛිත භාෂාව) and one has to thoroughly know the Orthography(අක්ෂර වින්‍යාසය), which refers to the set of standards which should be followed, including spelling rules, punctuation, and letter formation. It is important that these letters follow the Grammar conventions as well. Formal Letter Writing is a crucial skill in the Sri Lankan Education System as well, which is still being examined in the Ordinary Level Sinhala Exam paper.
 
 \section{Data Sources}
 \subsection{Data Acquisition}
