@@ -291,23 +291,21 @@ When selecting an LLM for this research, several alternatives were evaluated:
 
 \textbf{XGLM and BLOOM:} While BLOOM's 176B parameter variant shows reasonable multilingual capabilities, its computational requirements (requiring multiple high-end GPUs) make it impractical for deployment in typical research or production environments. XGLM, despite supporting Sinhala, exhibited similar extraction quality issues as smaller LLaMA variants.
 
-\textbf{Aya 8B (Selected Model):} The Aya 8B model was ultimately selected for this research based on several compelling factors:
+\textbf{Aya 8B:} The Aya 8B model presents several relevant characteristics for Sinhala text generation research:
 
 \begin{itemize}
     \item \textbf{Sinhala-specific training:} Unlike general multilingual models, Aya 8B was trained on a carefully curated dataset that included substantial high-quality Sinhala text, collected specifically to address low-resource language needs. This resulted in significantly better understanding of Sinhala grammatical structures, honorifics, and formal writing conventions.
-    
+
     \item \textbf{Extraction quality:} Comparative experiments demonstrated that Aya 8B could accurately extract structured information from informal Sinhala prompts, correctly identifying letter types (ඉල්ලීම්, පැමිණිලි, ස්තූති), recipients, subjects, and purposes – a task where smaller models consistently failed.
-    
-    \item \textbf{Deployment feasibility:} With 4.8GB memory footprint when 4-bit quantized, Aya 8B can be deployed on modest hardware (24GB RAM, 4 CPU cores) using Ollama, making it accessible for research and practical deployment without expensive cloud infrastructure. This aligns with the research objective of providing reproducible frameworks for low-resource language communities.
-    
-    \item \textbf{Generation quality:} In pilot tests, Aya 8B demonstrated superior ability to maintain formal Sinhala register (ලිඛිත භාෂාව), correctly apply honorific verb forms based on context, and structure letters according to conventional Sinhala formal letter templates – capabilities that general-purpose models like GPT-3.5 struggled with despite their larger scale.
-    
+
+    \item \textbf{Local deployment:} Aya 8B can be deployed locally using the Ollama inference framework, which is relevant for scenarios where data privacy or offline operation is required.
+
+    \item \textbf{Generation quality:} In pilot tests, Aya 8B demonstrated the ability to maintain formal Sinhala register (ලිඛිත භාෂාව), correctly apply honorific verb forms based on context, and structure letters according to conventional Sinhala formal letter templates.
+
     \item \textbf{Context window:} Aya 8B supports an 8192-token context window, sufficient for incorporating multiple retrieved letter examples in the RAG pipeline along with extraction results and generation instructions.
-    
-    \item \textbf{Open weights and local inference:} Unlike proprietary models, Aya 8B's weights are publicly available, enabling full local deployment, reproducibility, and avoiding ongoing API costs or data privacy concerns associated with cloud-based LLMs.
 \end{itemize}
 
-The selection of Aya 8B represents a strategic balance between model capability, resource requirements, and task-specific performance for Sinhala. While larger models like GPT-4 may demonstrate superior performance on some English benchmarks, Aya 8B's focused training on low-resource languages and its demonstrated effectiveness in Sinhala information extraction and formal text generation make it the optimal choice for this research. This decision aligns with the broader research goal of developing accessible, reproducible NLP solutions for low-resource languages that do not require expensive computational infrastructure or proprietary API access.
+A key design decision in this research is that the pipeline does \textit{not} commit to a single LLM. Instead, the system implements a provider-agnostic LLM factory (described in detail in Chapter 4) that supports multiple model providers—including Ollama-hosted models such as Aya 8B, Google Gemini, OpenAI, Azure OpenAI, and HuggingFace models—through a unified configuration interface. This means the RAG pipeline's effectiveness can be evaluated with different underlying models, and the research findings apply to the retrieval and augmentation approach rather than to any specific LLM. The model layer is deliberately decoupled from the rest of the pipeline, enabling reproducibility across different hardware and deployment environments.
 
 \subsection{Structure of Sinhala Formal Letters}
 Sinhala formal letters follow a strict structural convention that must be maintained for the letter to be considered properly formatted. The standard structure includes several mandatory components arranged in a specific order. Figure \ref{fig:3.2} illustrates the typical layout of a formal Sinhala letter. These structural elements are not merely stylistic choices but represent deeply ingrained conventions in Sri Lankan administrative and educational contexts. Deviation from this structure can result in a letter being perceived as unprofessional or inappropriate.
@@ -644,51 +642,39 @@ Transformer-based NER was chosen over rule-based extraction (regex patterns) bec
 
 Evaluation on held-out test data demonstrates 88.4\% entity-level F1 score, significantly outperforming regex baselines (45.2\%) and validating the transformer approach for Sinhala NER tasks.
 
-\subsection{Text Generation: Aya 8B Model}
+\subsection{Text Generation: Plug-and-Play LLM Architecture}
 
-This research employs the Aya 8B model, an open-source multilingual large language model, as the primary text generation engine. The selection of Aya 8B over commercial alternatives like GPT-4 or Claude is driven by several research considerations:
+A key design principle of this research is that the text generation component is built as a \textbf{provider-agnostic, plug-and-play LLM architecture}. Rather than coupling the pipeline to any specific model, the system defines a unified interface through which any supported LLM provider can be swapped in via configuration alone—without any code changes. This design serves two purposes: it allows the research to evaluate and compare different multilingual LLMs on the Sinhala letter generation task, and it ensures the system remains adaptable as the field of multilingual NLP continues to evolve.
 
-\subsubsection{Rationale for Aya 8B Selection}
+\subsubsection{Multi-Provider LLM Factory}
 
-\textbf{1. Explicit Low-Resource Language Support}
-
-Aya 8B is specifically designed and trained on 101 languages, with explicit inclusion of low-resource languages including Sinhala. Unlike general-purpose multilingual models that may include Sinhala as a byproduct of web scraping, Aya's training methodology deliberately curates and balances low-resource language data. This makes it an ideal candidate for evaluating whether purpose-built multilingual models can effectively handle formal Sinhala text generation tasks.
-
-\textbf{2. Benchmarking Against Baseline Multilingual Models}
-
-A key objective of this research is to critically assess the extent to which current multilingual language models can support formal writing tasks in low-resource languages. By using Aya 8B—a model explicitly trained for multilingual capability rather than English-centric performance—we can evaluate whether state-of-the-art multilingual architectures have reached sufficient maturity to handle domain-specific Sinhala text generation when augmented with retrieval mechanisms.
-
-\textbf{3. Reproducibility and Accessibility}
-
-As an open-source model deployable on standard hardware (8 billion parameters, 4-bit quantized to 4.8GB), Aya 8B enables reproducible research. Other researchers studying low-resource NLP can replicate this study without requiring expensive API access or proprietary model licenses. This aligns with the broader goal of democratizing NLP research for under-resourced languages.
-
-\textbf{4. Architectural Transparency}
-
-Open-source models allow detailed analysis of failure modes and model behavior, which is crucial for understanding limitations in low-resource language support. Commercial black-box APIs provide limited insight into why certain Sinhala constructions fail or succeed.
-
-\subsubsection{Model Specifications}
+The system implements an \texttt{LLMFactory} pattern that centralises LLM initialisation across all five pipeline steps. Supported providers are enumerated as follows:
 
 \begin{itemize}
-    \item \textbf{Model Family:} Aya-101 multilingual series
-    \item \textbf{Parameters:} 8 billion
-    \item \textbf{Languages Supported:} 101 languages including Sinhala
-    \item \textbf{Context Window:} 8,192 tokens
-    \item \textbf{Quantization:} 4-bit for memory efficiency (4.8GB total)
-    \item \textbf{Architecture:} Transformer-based decoder
-    \item \textbf{Training Data:} Multilingual corpus with balanced low-resource language sampling
+    \item \textbf{Google Gemini} — accessed via the Google Generative AI API (e.g., \texttt{gemini-2.5-flash})
+    \item \textbf{Ollama} — local open-source inference framework supporting models such as Aya 8B (\texttt{aya:8b}), LLaMA, Mistral, and others
+    \item \textbf{OpenAI} — standard OpenAI REST API (e.g., GPT-4o)
+    \item \textbf{Azure OpenAI} — enterprise-grade OpenAI deployment via Azure
+    \item \textbf{HuggingFace} — models loaded directly from the HuggingFace Hub
 \end{itemize}
 
-\subsubsection{Deployment via Ollama}
+The active provider is selected through a single configuration parameter. The factory reads the provider enum, loads the corresponding credentials from environment variables, and returns a LangChain-compatible LLM object that integrates transparently with the rest of the pipeline. This means that switching from one model or provider to another requires only a one-line configuration change—no modifications to extraction, retrieval, or generation logic are needed.
 
-The model is deployed using Ollama, an open-source LLM inference framework that provides:
-\begin{itemize}
-    \item Local inference without external API dependencies
-    \item REST API for seamless integration with the RAG pipeline
-    \item Efficient model loading and memory management
-    \item Support for multiple concurrent requests
-\end{itemize}
+\subsubsection{Separation of Extraction and Generation Models}
 
-This deployment approach ensures the system remains operational independent of third-party service availability, which is critical for research continuity and long-term reproducibility.
+The architecture supports using \textit{different} providers for the two LLM-dependent steps in the pipeline: information extraction (Step 1) and letter generation (Step 5). This separation is intentional: the requirements for each step differ significantly. Information extraction benefits from fast, instruction-following models with structured output capabilities, while letter generation requires strong multilingual fluency and coherent long-form output. The configuration system allows each step to be independently assigned a provider and model.
+
+\subsubsection{Current Default Configuration}
+
+The pipeline is currently configured to use \textbf{Google Gemini 2.5 Flash} as the default model for both extraction and generation, accessed via the LangChain Google Generative AI integration. Gemini 2.5 Flash offers strong multilingual capability, including Sinhala, with low latency and no local GPU requirements.
+
+For researchers wishing to run the system in a fully local, offline environment, the Ollama provider with the \textbf{Aya 8B} model (\texttt{aya:8b}) is supported as an alternative. Aya 8B is a multilingual open-source model trained on 101 languages with explicit inclusion of Sinhala, making it a relevant candidate for low-resource NLP evaluation. It can be deployed locally using the Ollama inference framework, which provides a REST API, efficient model loading, and memory management without any external API dependencies.
+
+\subsubsection{Design Rationale}
+
+The plug-and-play design reflects a deliberate research stance: rather than evaluating the performance of one specific LLM on Sinhala letter generation, this work evaluates the \textit{RAG pipeline approach} itself—measuring how much retrieval-augmented context improves generation quality, regardless of the underlying model. By keeping the model layer interchangeable, the system allows the same experimental setup to be replicated with different LLMs, enabling future comparative studies across multilingual model families.
+
+This architecture also aligns with reproducibility goals: researchers with access to different infrastructure (GPU-enabled local machines, cloud APIs, or enterprise deployments) can run the same pipeline using the provider most suited to their environment.
 
 \subsection{Metadata Filtering}
 
@@ -765,7 +751,7 @@ The metadata schema is designed to support future extension to graph databases i
 Indexing and embedding is done using FAISS (Facebook AI Similarity Search), which is a highly efficient indexing library specifically designed for rapid similarity search in dense vector embeddings. It supports high-dimensional embedding spaces, enabling swift retrieval of semantically similar data. FAISS employs various optimized indexing methods, including clustering-based quantization and hierarchical structures, facilitating efficient approximate nearest neighbor searches. This makes FAISS especially suitable for the letter-generation pipeline in Sinhala, where categorized and cleaned letter sections are embedded into vector representations. Leveraging FAISS indexing allows rapid retrieval of structurally and contextually relevant letter bodies during prompt-based generation tasks, significantly improving response accuracy and speed within retrieval-augmented generation (RAG) systems. Consequently, FAISS’s effectiveness in managing and retrieving large-scale embeddings ensures the pipeline consistently generates coherent, contextually appropriate Sinhala letters tailored to user prompts. Detailed explanation on how this is done is explained in the following section.
 
 \section{Generation Pipeline}
-The generation pipeline employs retrieval-augmented generation (RAG), where the most similar letter structures are retrieved from the FAISS-indexed dataset. After retrieval, the pipeline utilizes prompt engineering techniques—discussed in detail in the subsequent section—to optimize the prompt provided to Aya 8B, the multilingual large language model (LLM) used in this experiment. Following generation, the output is evaluated by users, and the prompt is refined based on their feedback. Acceptable outputs undergo named entity recognition (NER) processing to remove entities before being re-embedded and added back to the FAISS index, continuously enhancing the dataset's quality and breadth.
+The generation pipeline employs retrieval-augmented generation (RAG), where the most similar letter structures are retrieved from the FAISS-indexed dataset. After retrieval, the pipeline utilizes prompt engineering techniques—discussed in detail in the subsequent section—to construct an enhanced prompt that is passed to the configured LLM for generation. The pipeline is designed to be model-agnostic: the LLM used at this stage is determined entirely by configuration, enabling any supported provider (such as Google Gemini or Ollama-hosted models) to be used interchangeably. Following generation, the output is evaluated by users, and the prompt is refined based on their feedback. Acceptable outputs undergo named entity recognition (NER) processing to remove entities before being re-embedded and added back to the FAISS index, continuously enhancing the dataset's quality and breadth.
 
 \section{Hypothesis Testing Framework}
 
@@ -777,7 +763,7 @@ The hypothesis testing follows a between-subjects comparative design with two ex
 
 \textbf{Baseline Condition (Control):}
 \begin{itemize}
-    \item \textbf{Model:} Aya 8B multilingual LLM without retrieval augmentation
+    \item \textbf{Model:} Multilingual LLM without retrieval augmentation (using the same configured LLM as the experimental condition, ensuring a fair comparison)
     \item \textbf{Input:} User prompt is directly passed to the LLM with minimal prompt engineering
     \item \textbf{Context:} No retrieved letter examples provided; model relies solely on its pretrained knowledge of Sinhala formal writing conventions
     \item \textbf{Purpose:} Represents the current state-of-the-art for multilingual LLM performance on low-resource formal text generation
@@ -785,10 +771,10 @@ The hypothesis testing follows a between-subjects comparative design with two ex
 
 \textbf{Experimental Condition (RAG):}
 \begin{itemize}
-    \item \textbf{Model:} Aya 8B multilingual LLM with full RAG pipeline
+    \item \textbf{Model:} Same multilingual LLM with the full RAG pipeline applied
     \item \textbf{Input:} User prompt undergoes information extraction, semantic retrieval (FAISS + cross-encoder reranking), and augmented prompt construction
     \item \textbf{Context:} Top-3 most relevant letter examples retrieved from knowledge base and included in generation context
-    \item \textbf{Purpose:} Tests whether retrieval-augmented approach compensates for limited Sinhala training data
+    \item \textbf{Purpose:} Tests whether the retrieval-augmented approach compensates for limited Sinhala training data in the underlying model
 \end{itemize}
 
 \subsection{Evaluation Metrics}
@@ -865,8 +851,8 @@ A diverse test set of 30 letter generation prompts is curated covering:
 \subsubsection{Generation Procedure}
 For each test prompt:
 \begin{enumerate}
-    \item Generate letter using baseline Aya 8B (control condition)
-    \item Generate letter using full RAG pipeline (experimental condition)
+    \item Generate letter using the configured LLM directly, without retrieval (control condition)
+    \item Generate letter using the full RAG pipeline with the same LLM (experimental condition)
     \item Randomize output order to prevent evaluation bias
     \item Present both outputs to evaluators without revealing which is RAG vs. baseline
 \end{enumerate}
@@ -958,27 +944,30 @@ Consists of REST APIs to interact with the pipeline. Table 4.1 shows the endpoin
 
 \begin{table}[h!]
 \centering
-\begin{tabular}{@{}p{4cm}p{12cm}@{}}
+\begin{tabular}{@{}p{4.5cm}p{11.5cm}@{}}
 \toprule
 \textbf{Endpoint} & \textbf{Description} \\
 \midrule
-\verb|POST /generate_letter| &
-Generates a letter based on the provided original and enhanced prompts using the LLM. \\
+\verb|POST /extract/| &
+Step 1 only: accepts a user prompt and returns structured extracted metadata (letter type, recipient, sender, subject, purpose, details). \\
 \midrule
-\verb|POST /process_query| &
-Generates a letter based on the provided original and enhanced prompts using the LLM. \\
+\verb|POST /process_query/| &
+Runs Steps 1–4 of the pipeline: extracts information, detects missing fields, retrieves relevant documents from the FAISS knowledge base, and builds an enhanced prompt. Returns either the enhanced prompt (if all required fields are present) or a set of Sinhala clarifying questions (if fields are missing). \\
 \midrule
-\verb|POST /process_query| &
-Analyzes the user prompt to extract information and identifies missing fields needed to complete the letter. Uses a fine-tuned transformer model internally. \\
+\verb|POST /generate_letter/| &
+Step 5: accepts an enhanced prompt produced by \texttt{/process\_query/} and generates the final Sinhala formal letter using the configured LLM. \\
 \midrule
-\verb|POST /search| &
-Searches the FAISS index to retrieve the top K relevant documents based on the query embedding. \\
+\verb|POST /search/| &
+Searches the FAISS index directly, returning the top-K most relevant documents for a given query embedding. Useful for inspecting retrieval behaviour. \\
 \midrule
-\verb|POST /rebuild_knowledge_base| &
-Rebuilds the entire FAISS knowledge base from the source data CSV. \\
+\verb|POST /rebuild_knowledge_base/| &
+Rebuilds the entire FAISS knowledge base from the source data CSV. Used when the corpus has been updated. \\
 \midrule
-\verb|POST /diagnostics| &
-Runs a diagnostics check on the RAG pipeline, reporting document count, embedding model, sample searches, and data source validation. \\
+\verb|POST /rate_letter/| &
+Accepts a user rating (1–5 stars) for a generated letter. Letters rated 4 or above are anonymised and added to the live FAISS index, enabling continuous knowledge base improvement. \\
+\midrule
+\verb|GET /diagnostics/| &
+Returns a diagnostic report of the RAG pipeline, including document count, embedding model, sample retrieval results, and data source validation status. \\
 \bottomrule
 \end{tabular}
 \caption{Descriptions of API Endpoints in the RAG Pipeline}
@@ -987,7 +976,7 @@ Runs a diagnostics check on the RAG pipeline, reporting document count, embeddin
 
 \subsection{Information Extraction Methods}
 
-Information extraction is a critical component of the letter generation pipeline, responsible for parsing user prompts (often informal Sinhala text) into structured fields such as letter type, recipient, subject, and purpose. This research implements and evaluates two distinct extraction approaches: (1) a fine-tuned Named Entity Recognition (NER) model using transformer architectures, and (2) a Large Language Model (LLM) based extraction using few-shot prompting with Aya 8B.
+Information extraction is a critical component of the letter generation pipeline, responsible for parsing user prompts (often informal Sinhala text) into structured fields such as letter type, recipient, subject, and purpose. This research implements and evaluates two distinct extraction approaches: (1) a fine-tuned Named Entity Recognition (NER) model using transformer architectures, and (2) an LLM-based extraction using schema-first prompting through the plug-and-play LLM factory described in Section 3.4.
 
 \subsubsection{NER-Based Extraction}
 
@@ -1054,7 +1043,7 @@ Raw NER outputs undergo structured conversion:
 
 \textbf{Schema-First Prompting Architecture}
 
-The LLM-based extraction leverages Aya 8B's instruction-following capabilities through schema-first prompting. This approach does not require training data or model fine-tuning—instead, it provides the model with an explicit JSON schema definition that guides the extraction process.
+The LLM-based extraction leverages the instruction-following capabilities of the configured LLM through schema-first prompting. This approach does not require training data or model fine-tuning—instead, it provides the model with an explicit JSON schema definition that guides the extraction process. Because extraction is handled through the LLM factory (see Section 3.4), any supported provider can serve as the extraction model without changes to the extraction logic.
 
 \textbf{Extraction Schema Definition:}
 
@@ -1117,28 +1106,30 @@ LLM outputs undergo several validation steps:
 
 \textbf{Code Implementation:}
 
+The extraction step is implemented using a LangChain chain, making it provider-agnostic. The extraction LLM is injected at pipeline initialisation time and can be any supported provider (Gemini, Ollama, OpenAI, etc.):
+
 \begin{verbatim}
 def _extract_with_llm(self, text: str) -> dict:
-    """Extract information using Aya 8B via Ollama"""
+    """Extract information using the configured LLM via LangChain"""
     extraction_prompt = f"""
     මෙම සිංහල ලිපි ඉල්ලීමෙන් ප්‍රධාන තොරතුරු උපුටා ගන්න.
-    
+
     පහත JSON ආකෘතිය භාවිතා කරන්න:
     {self.extraction_schema}
-    
+
     දැන් මෙම ඉල්ලීම විශ්ලේෂණය කරන්න:
     {text}
-    
+
     වලංගු JSON පමණක් ප්‍රතිදානය කරන්න:
     """
-    response = ollama.chat(
-        model="aya:8b",
-        messages=[{"role": "user", "content": extraction_prompt}]
-    )
-    extracted = json.loads(self._clean_json_text(
-        response['message']['content']))
+    prompt_template = ChatPromptTemplate.from_template("{prompt}")
+    chain = prompt_template | self.llm | StrOutputParser()
+    response = chain.invoke({"prompt": extraction_prompt})
+    extracted = json.loads(self._clean_json_text(response))
     return self._coerce_to_schema(extracted)
 \end{verbatim}
+
+The \texttt{self.llm} object is initialised by the \texttt{LLMFactory} at startup and is fully interchangeable. Rate-limit errors (HTTP 429) from API-based providers are handled automatically with exponential backoff (up to 4 retries, base delay 5 seconds).
 
 \subsubsection{Comparative Evaluation of Extraction Methods}
 
@@ -1159,7 +1150,7 @@ Both extraction methods were evaluated on a held-out test set of 30 Sinhala prom
 \centering
 \begin{tabular}{|l|c|c|}
 \hline
-\textbf{Metric} & \textbf{NER-Based} & \textbf{LLM-Based (Aya 8B)} \\ \hline
+\textbf{Metric} & \textbf{NER-Based} & \textbf{LLM-Based} \\ \hline
 Field Accuracy & 82\% & 89\% \\ \hline
 Complete Extraction Rate & 67\% & 77\% \\ \hline
 Semantic Correctness & 85\% & 91\% \\ \hline
@@ -1200,13 +1191,13 @@ Training Required & Yes (5 epochs) & No (zero-shot) \\ \hline
 \begin{itemize}
     \item \textbf{Latency:} 7× slower than NER approach
     \item \textbf{Stochastic:} Minor output variations across runs (temperature > 0)
-    \item \textbf{Resource Intensive:} Requires 4.8GB GPU memory
-    \item \textbf{Dependency:} Relies on availability of multilingual LLM
+    \item \textbf{Resource Requirements:} For locally hosted models (e.g., via Ollama), significant GPU memory is required; API-based providers (e.g., Gemini) eliminate this constraint but introduce network dependency
+    \item \textbf{Dependency:} Relies on availability of the configured LLM provider
 \end{itemize}
 
 \textbf{Implementation Decision}
 
-For this research, the \textbf{LLM-based extraction using Aya 8B} was selected as the primary method based on:
+For this research, the \textbf{LLM-based extraction} was selected as the primary method based on:
 
 \begin{enumerate}
     \item \textbf{Superior Accuracy:} 7\% higher field accuracy and 10\% higher complete extraction rate
@@ -1214,6 +1205,7 @@ For this research, the \textbf{LLM-based extraction using Aya 8B} was selected a
     \item \textbf{Adaptability:} Schema changes require only schema modification, not model retraining or example curation
     \item \textbf{Research Focus:} Aligns with objective of evaluating multilingual LLM capabilities on low-resource tasks
     \item \textbf{Prompt Efficiency:} Schema-first approach reduces token count compared to few-shot examples
+    \item \textbf{Provider Flexibility:} Because the extraction step uses the plug-and-play LLM factory, the best available model can be used for extraction at any point without restructuring the pipeline
 \end{enumerate}
 
 The 0.73s latency difference (0.85s vs 0.12s) was deemed acceptable for a research prototype where generation quality outweighs real-time performance constraints. For production deployment with high-throughput requirements, the NER approach or a hybrid solution (NER for simple prompts, LLM for complex cases) would be preferable.
@@ -1326,7 +1318,51 @@ This FAISS-powered vector store becomes the semantic memory of the system—enab
 
 \section{RAG Pipeline}
 
+The RAG pipeline is implemented as a modular, five-step orchestration managed by a central \texttt{Pipeline} class. The pipeline exposes a two-part interface to the FastAPI layer: \texttt{process()}, which runs Steps 1–4 and returns either an enhanced prompt or a set of clarifying questions, and \texttt{generate\_letter()}, which runs Step 5 to produce the final letter.
+
+\subsection{Step 1: Information Extraction}
+
+The first step parses the user's informal Sinhala prompt into a structured metadata object. As described in Section 4.2, this is implemented using LLM-based schema-first prompting through the plug-and-play LLM factory. The extracted fields—letter type, recipient, sender, subject, purpose, details, and optional event fields (date, time, venue)—are passed to the next step for validation.
+
+\subsection{Step 2: Gap Detection}
+
+The gap detection step validates the extracted metadata against a predefined set of required fields for each letter type. For example, an \textit{invitation} letter requires event date, time, and venue fields in addition to the standard recipient, sender, and purpose fields. If any required fields are missing, the system generates type-specific clarifying questions in Sinhala (e.g., \textit{"උත්සවය පැවැත්වෙන ස්ථානය කුමක්ද?"} for a missing venue field) and returns them to the user. The pipeline halts at this step until all required information is collected through the multi-turn dialogue.
+
+\subsection{Step 3: Document Retrieval}
+
+Once all required fields are present, the retrieval step constructs a semantic search query from the extracted metadata using the \texttt{SinhalaQueryBuilder}. This component maps English field values to their Sinhala equivalents and enriches the query with formal language indicators and letter-type-specific terminology, improving the semantic alignment between the query and the Sinhala letter corpus.
+
+The retrieval strategy follows a two-part approach:
+\begin{enumerate}
+    \item One structure template matching the letter category is retrieved from the knowledge base. Structure templates define the skeletal sections of formal Sinhala letters and guide the overall layout of the generated output.
+    \item Two example letters matching the letter category are retrieved. If the reranker is enabled, the initial top-20 candidates from FAISS are re-scored by the cross-encoder model (\texttt{cross-encoder/ms-marco-MiniLM-L-6-v2}) and the final top-2 are selected based on relevance. If no category-specific documents are found, the retrieval falls back to unfiltered results.
+\end{enumerate}
+
+\subsection{Step 4: Prompt Construction}
+
+The prompt builder combines all available context into a structured enhanced prompt. The prompt includes:
+\begin{itemize}
+    \item A system instruction in Sinhala identifying the assistant's role as a formal letter writing assistant
+    \item The structured letter details extracted in Step 1 (type, recipient, sender, subject, purpose, details, and any event-specific fields for invitations)
+    \item The retrieved structure template and example letters, separated by delimiters, with instructions to use them as reference for structure and formal language
+    \item Explicit generation instructions covering letter completeness, grammar, punctuation, formal register (ලිඛිත භාෂාව), and prohibition of code-mixing
+\end{itemize}
+
+This enhanced prompt is returned to the API layer, which then calls the \texttt{generate\_letter()} endpoint to proceed to Step 5.
+
 \section{Letter Generation Pipeline}
+
+Step 5 implements letter generation as a minimal LangChain chain:
+
+\begin{verbatim}
+prompt_template = ChatPromptTemplate.from_template("{enhanced_prompt}")
+chain = prompt_template | self.llm | StrOutputParser()
+letter = chain.invoke({"enhanced_prompt": enhanced_prompt})
+\end{verbatim}
+
+The \texttt{self.llm} object is the generation LLM initialised by the \texttt{LLMFactory} at startup. The chain passes the enhanced prompt directly to the model and returns the raw string output. This simplicity is intentional: because all context structuring and instruction embedding is handled in Step 4, Step 5 requires only a clean LLM invocation. The model-agnostic design means the same generation step works identically with any supported provider.
+
+Following generation, the system returns the letter to the user interface, where the user can rate the output on a 1–5 scale. Letters rated 4 or above are passed through the NER privacy module to remove personal entities, then embedded using LaBSE and added to the live FAISS index. This feedback loop continuously expands the knowledge base with high-quality, user-validated examples, improving the quality of future retrievals over time.
 
 \section{GraphDB integration}
 
