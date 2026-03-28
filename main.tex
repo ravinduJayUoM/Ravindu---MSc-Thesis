@@ -948,25 +948,25 @@ Consists of REST APIs to interact with the pipeline. Table 4.1 shows the endpoin
 \toprule
 \textbf{Endpoint} & \textbf{Description} \\
 \midrule
-\verb|POST /extract/| &
+\texttt{POST /extract/} &
 Step 1 only: accepts a user prompt and returns structured extracted metadata (letter type, recipient, sender, subject, purpose, details). \\
 \midrule
-\verb|POST /process_query/| &
+\texttt{POST /process\_query/} &
 Runs Steps 1–4 of the pipeline: extracts information, detects missing fields, retrieves relevant documents from the FAISS knowledge base, and builds an enhanced prompt. Returns either the enhanced prompt (if all required fields are present) or a set of Sinhala clarifying questions (if fields are missing). \\
 \midrule
-\verb|POST /generate_letter/| &
+\texttt{POST /generate\_letter/} &
 Step 5: accepts an enhanced prompt produced by \texttt{/process\_query/} and generates the final Sinhala formal letter using the configured LLM. \\
 \midrule
-\verb|POST /search/| &
+\texttt{POST /search/} &
 Searches the FAISS index directly, returning the top-K most relevant documents for a given query embedding. Useful for inspecting retrieval behaviour. \\
 \midrule
-\verb|POST /rebuild_knowledge_base/| &
+\texttt{POST /rebuild\_knowledge\_base/} &
 Rebuilds the entire FAISS knowledge base from the source data CSV. Used when the corpus has been updated. \\
 \midrule
-\verb|POST /rate_letter/| &
+\texttt{POST /rate\_letter/} &
 Accepts a user rating (1–5 stars) for a generated letter. Letters rated 4 or above are anonymised and added to the live FAISS index, enabling continuous knowledge base improvement. \\
 \midrule
-\verb|GET /diagnostics/| &
+\texttt{GET /diagnostics/} &
 Returns a diagnostic report of the RAG pipeline, including document count, embedding model, sample retrieval results, and data source validation status. \\
 \bottomrule
 \end{tabular}
@@ -1005,7 +1005,7 @@ The training dataset was curated from 150 official Sinhala letters using a semi-
 
 The NER model was trained to recognize six entity types critical for letter generation:
 
-\begin{verbatim}
+\begin{SinhalaVerbatim}
 Entity Types:
 - LETTER_TYPE: Letter category (application/request/complaint)
 - RECIPIENT: Intended recipient (e.g., කළමනාකරු, අධ්‍යක්ෂ)
@@ -1013,7 +1013,7 @@ Entity Types:
 - SUBJECT: Subject line or main topic
 - PURPOSE: Primary intent or reason for writing
 - DATE: Time-related information (deadlines, dates)
-\end{verbatim}
+\end{SinhalaVerbatim}
 
 \textbf{Training Configuration:}
 
@@ -1047,7 +1047,7 @@ The LLM-based extraction leverages the instruction-following capabilities of the
 
 \textbf{Extraction Schema Definition:}
 
-\begin{verbatim}
+\begin{SinhalaVerbatim}
 {
     "letter_type": "ලිපි වර්ගය (application/request/complaint)",
     "recipient": "ලිපිය ලබන්නා",
@@ -1056,7 +1056,7 @@ The LLM-based extraction leverages the instruction-following capabilities of the
     "purpose": "ලිපියේ අරමුණ",
     "key_details": ["වැදගත් තොරතුරු ලැයිස්තුව"]
 }
-\end{verbatim}
+\end{SinhalaVerbatim}
 
 The schema includes inline descriptions in Sinhala for each field, serving as implicit instructions to the model. For example, the field \texttt{letter\_type} includes the Sinhala description and expected categories (application/request/complaint) directly in the schema value.
 
@@ -1064,30 +1064,30 @@ The schema includes inline descriptions in Sinhala for each field, serving as im
 
 The schema-first prompt combines structured instructions and the user's input:
 
-\begin{verbatim}
+\begin{SinhalaVerbatim}
 "මෙම සිංහල ලිපි ඉල්ලීමෙන් ප්‍රධාන තොරතුරු උපුටා ගන්න.
 
 පහත JSON ආකෘතිය භාවිතා කරන්න:
 {
-    \"letter_type\": \"ලිපි වර්ගය (application/request/complaint)\",
-    \"recipient\": \"ලිපිය ලබන්නා\",
-    \"sender\": \"ලිපිය යවන්නා\",
-    \"subject\": \"ලිපියේ විෂයය\",
-    \"purpose\": \"ලිපිය ලියන අරමුණ\",
-    \"key_details\": [\"වැදගත් තොරතුරු ලැයිස්තුව\"]
+    "letter_type": "ලිපි වර්ගය (application/request/complaint)",
+    "recipient": "ලිපිය ලබන්නා",
+    "sender": "ලිපිය යවන්නා",
+    "subject": "ලිපියේ විෂයය",
+    "purpose": "ලිපිය ලියන අරමුණ",
+    "key_details": ["වැදගත් තොරතුරු ලැයිස්තුව"]
 }
 
 දැන් මෙම ඉල්ලීම විශ්ලේෂණය කරන්න:
 [USER PROMPT]
 
 වලංගු JSON පමණක් ප්‍රතිදානය කරන්න. අනෙකුත් පැහැදිලි කිරීම් අවශ්‍ය නැත."
-\end{verbatim}
+\end{SinhalaVerbatim}
 
 \textbf{Output Validation and Cleaning:}
 
 LLM outputs undergo several validation steps:
 \begin{enumerate}
-    \item Remove markdown code fences (\verb|```json|)
+    \item Remove markdown code fences (\texttt{```json})
     \item Parse JSON and validate structure
     \item Coerce missing fields to empty strings/arrays
     \item Normalize letter\_type to predefined categories
@@ -1108,7 +1108,7 @@ LLM outputs undergo several validation steps:
 
 The extraction step is implemented using a LangChain chain, making it provider-agnostic. The extraction LLM is injected at pipeline initialisation time and can be any supported provider (Gemini, Ollama, OpenAI, etc.):
 
-\begin{verbatim}
+\begin{SinhalaVerbatim}
 def _extract_with_llm(self, text: str) -> dict:
     """Extract information using the configured LLM via LangChain"""
     extraction_prompt = f"""
@@ -1127,7 +1127,7 @@ def _extract_with_llm(self, text: str) -> dict:
     response = chain.invoke({"prompt": extraction_prompt})
     extracted = json.loads(self._clean_json_text(response))
     return self._coerce_to_schema(extracted)
-\end{verbatim}
+\end{SinhalaVerbatim}
 
 The \texttt{self.llm} object is initialised by the \texttt{LLMFactory} at startup and is fully interchangeable. Rate-limit errors (HTTP 429) from API-based providers are handled automatically with exponential backoff (up to 4 retries, base delay 5 seconds).
 
@@ -1251,10 +1251,10 @@ Detected entities are replaced with generic placeholders to preserve sentence st
 \textbf{Example Preprocessing:}
 
 \textbf{Original:}
-\begin{verbatim}
-"මම සුනිල් පෙරේරා. මොරටුව විශ්වවිද්‍යාලයට 2024 ජනවාරි මස 15 වැනිදා 
+\begin{SinhalaVerbatim}
+"මම සුනිල් පෙරේරා. මොරටුව විශ්වවිද්‍යාලයට 2024 ජනවාරි මස 15 වැනිදා
 සහභාගි වීමට කැමතියි."
-\end{verbatim}
+\end{SinhalaVerbatim}
 
 \textbf{After NER Privacy Processing:}
 \begin{SinhalaVerbatim}
@@ -1363,9 +1363,6 @@ letter = chain.invoke({"enhanced_prompt": enhanced_prompt})
 The \texttt{self.llm} object is the generation LLM initialised by the \texttt{LLMFactory} at startup. The chain passes the enhanced prompt directly to the model and returns the raw string output. This simplicity is intentional: because all context structuring and instruction embedding is handled in Step 4, Step 5 requires only a clean LLM invocation. The model-agnostic design means the same generation step works identically with any supported provider.
 
 Following generation, the system returns the letter to the user interface, where the user can rate the output on a 1–5 scale. Letters rated 4 or above are passed through the NER privacy module to remove personal entities, then embedded using LaBSE and added to the live FAISS index. This feedback loop continuously expands the knowledge base with high-quality, user-validated examples, improving the quality of future retrievals over time.
-
-\section{GraphDB integration}
-
 
 \begin{references}
     \bibliography{references} % argument is your bibliography database(s)
