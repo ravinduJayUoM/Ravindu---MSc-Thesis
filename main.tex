@@ -20,6 +20,10 @@
 \newfontfamily\sinhalafontsf{Noto Sans Sinhala}
 \newfontfamily\sinhalacodefont{FreeSerif}
 
+% Convenience macro for inline Sinhala text — use \si{...} around all Sinhala characters
+% to ensure correct font rendering in the PDF output.
+\newcommand{\si}[1]{{\sinhalafont #1}}
+
 \usepackage{fancyvrb}
 \DefineVerbatimEnvironment{SinhalaVerbatim}{Verbatim}{
   formatcom=\sinhalacodefont,
@@ -148,25 +152,25 @@ Write your abstract here. This document is a model and instructions for \LaTeX{}
 \chapter{Introduction}
 
 \section{Problem Statement}
-This research addresses a critical gap in Sinhala language processing. It aims to create an interactive model that enhances Sinhala text based on specific requirements. While various languages benefit from advanced NLP tools, Sinhala lacks similar resources. The primary objective is to develop a user-friendly, interactive language model enabling users to refine Sinhala text by eliminating grammatical errors and improving readability. This project does not aim to generate new content but focuses on enhancing existing text. By doing so, it helps the development of NLP tools tailored to Sinhala, offering individuals a valuable resource to elevate the quality of their written communication.
+This research addresses a critical gap in Sinhala language processing, specifically in the domain of formal letter writing. Formal Sinhala letters are essential to official communication across government, educational, and corporate settings in Sri Lanka, yet current Large Language Models (LLMs) are ill-equipped to generate them accurately. This deficiency stems from the scarcity of Sinhala-specific training data, the morphological complexity of the language, and the strict structural conventions governing formal correspondence. This research proposes and evaluates a Retrieval-Augmented Generation (RAG) based pipeline that generates high-quality formal Sinhala letters from informal user prompts. The system extracts structured intent from the prompt, retrieves relevant example letters from a curated knowledge base, and guides a multilingual LLM to produce contextually appropriate, grammatically correct, and properly structured formal letters. This work contributes to the broader goal of improving LLM support for Sinhala as a low-resource language, offering a practical framework that can serve as a foundation for future research in formal Sinhala text generation.
 
 
 \section{Research Questions}
 \subsection{Main Research Question}
-How to improve the quality of formal Sinhala text generation in Large Language Models using a Retrieval-Augmented Generation approach?
+How can a Retrieval-Augmented Generation approach be used to generate high-quality formal Sinhala letters from informal user prompts using Large Language Models?
 
 \subsection{Sub Research Questions}
 \begin{enumerate}
     \item What are the limitations in current Large language Models in generating formal Sinhala text?
     \item Can Dense Vector Indexes such as FAISS Index incorporated with LaBSE effectively retrieve the relevant Sinhala Texts to refer to generate expected text?
-    \item How does the RAG based system perform when compared with standard LLMs in Sinhala Text Generation in terms of grammar, structure and contextual relevance?
-    \item What is the impact of using a graph-based metadata filter (e.g., Neo4j) in conjunction with vector retrieval on generation accuracy and domain-specific relevance?
+    \item How does the RAG-based letter generation system compare with a standard LLM baseline in producing formal Sinhala letters, as measured through human expert evaluation of grammatical correctness, structural adherence, contextual relevance, and formality appropriateness?
+    \item What evaluation criteria and rubrics are most effective for assessing the quality of generated formal Sinhala letters, given the absence of established automated metrics for low-resource Sinhala?
     \item What are the limitations when applying RAG approach to low resourced languages like Sinhala?
 \end{enumerate}
 
 \section{Research Objectives}
 
-The primary objective of this research is to enhance the quality of formal Sinhala letter generation through a Retrieval-Augmented Generation approach that combines semantic search with multilingual language models. The specific objectives are:
+The primary objective of this research is to generate high-quality formal Sinhala letters from informal user prompts through a Retrieval-Augmented Generation approach that combines semantic search with multilingual language models. The specific objectives are:
 
 \begin{itemize}
     \item \textbf{Develop a two-stage retrieval architecture} combining FAISS-based dense vector search with cross-encoder reranking to improve precision in retrieving relevant Sinhala letter examples, addressing the limitations of single-stage embedding similarity approaches.
@@ -209,17 +213,17 @@ This research targets a RAG based approach to generate formal Sinhala texts for 
     \item Using LaBSE for creating text embeddings.
     \item Using FAISS to store the example data in Sinhala and for semantic retrieval of similar examples for user prompts.
     \item Qualitative evaluation of the generated outputs for the user prompts using human assesment. 
-    \item Two datasets have been combined and preprocessed to form a more accurate data set as the retrieval knowledge base. 
+    \item Two datasets have been combined and preprocessed to form the retrieval knowledge base: (1) a hand-curated dataset capturing the structure, conventions, and templates of formal Sinhala letters across letter types, and (2) a collection of high-quality formal Sinhala letters representing diverse real-world correspondence.
 \end{itemize}
 
-\section{Outof Scope}
+\section{Out of Scope}
 
 \begin{itemize}
-    \item Generation of formal text other than formal letters in Sinhala like Notices, News-paper article, summary, essay writing, meeting minutes, posters are not covered in this research.
-    \item Generation of informal text and spoken Sinhala are out of scope.
-    \item Building a comprehensive Sinhala NLP Pipeline including tokenizers and morphological analysers is not considered. 
-    \item Error correction and grammar checking in the generated text is not addressed.
-    \item Expansion to other low-resourced languages.
+    \item Formal Sinhala texts other than formal letters, such as notices, newspaper articles, essays, meeting minutes, and posters, are not covered in this research.
+    \item Generation of informal or spoken Sinhala text is outside the scope of this research.
+    \item Building a comprehensive Sinhala NLP pipeline, including tokenizers and morphological analysers, is not considered.
+    \item Post-generation error correction and grammar checking in the generated text are not addressed.
+    \item Extension of the approach to other low-resource languages is left for future work.
 \end{itemize}
 
 \section{Contribution}
@@ -322,15 +326,15 @@ Sinhala formal letters follow a strict structural convention that must be mainta
 Formal Sinhala letters can be categorized into several distinct types, each with specific purposes and slightly different conventions. Understanding these categories is essential for generating contextually appropriate letters, as each type has characteristic vocabulary, tone, and structural variations. The main categories include:
 
 \begin{enumerate}
-    \item Request Letters (ඉල්ලීම් ලිපි) - Used to formally request information, permissions, resources, or actions from authorities or institutions.
-    \item Invitation Letters (ආරාධනා ලිපි) - Formal invitations to events, ceremonies, or meetings.
-    \item Thank You Letters (ස්තූති ලිපි) - Expressing formal gratitude for assistance, support, or participation.
-    \item Recommendation Letters (නිර්දේශ ලිපි) - Providing formal recommendations for individuals for employment, education, or other purposes.
-    \item Inquiry Letters (විචාරණ ලිපි) - Seeking information or clarification on specific matters.
-    \item Transfer Letters (මාරු ලිපි) - Requesting or notifying transfers of position, location, or responsibility.
-    \item Leave Letters (නිවාඩු ලිපි) - Formally requesting time off from work or educational institutions.
-    \item Complaint Letters (පැමිණිලි ලිපි) - Lodging formal complaints about services, conduct, or situations.
-    \item Apology Letters (සමාව ඉල්ලීමේ ලිපි) - Offering formal apologies for mistakes, delays, or misconduct.
+    \item Request Letters ({\sinhalafont ඉල්ලීම් ලිපි}) - Used to formally request information, permissions, resources, or actions from authorities or institutions.
+    \item Invitation Letters ({\sinhalafont ආරාධනා ලිපි}) - Formal invitations to events, ceremonies, or meetings.
+    \item Thank You Letters ({\sinhalafont ස්තූති ලිපි}) - Expressing formal gratitude for assistance, support, or participation.
+    \item Recommendation Letters ({\sinhalafont නිර්දේශ ලිපි}) - Providing formal recommendations for individuals for employment, education, or other purposes.
+    \item Inquiry Letters ({\sinhalafont විචාරණ ලිපි}) - Seeking information or clarification on specific matters.
+    \item Transfer Letters ({\sinhalafont මාරු ලිපි}) - Requesting or notifying transfers of position, location, or responsibility.
+    \item Leave Letters ({\sinhalafont නිවාඩු ලිපි}) - Formally requesting time off from work or educational institutions.
+    \item Complaint Letters ({\sinhalafont පැමිණිලි ලිපි}) - Lodging formal complaints about services, conduct, or situations.
+    \item Apology Letters ({\sinhalafont සමාව ඉල්ලීමේ ලිපි}) - Offering formal apologies for mistakes, delays, or misconduct.
 \end{enumerate}
 
 \subsection{Challenges in Formal Sinhala Letter Generation}
@@ -355,7 +359,8 @@ These linguistic and resource-based challenges motivate the retrieval-augmented 
 
 \begin{table}[h!]
 \centering
-\begin{tabular}{@{}p{3cm}p{6cm}p{3.5cm}p{3.5cm}@{}}
+\small
+\begin{tabularx}{\linewidth}{@{}p{2.5cm}Xp{3.8cm}p{3.8cm}@{}}
 \toprule
 \textbf{Method} & \textbf{Description} & \textbf{Work done for low-resource languages other than Sinhala} & \textbf{Work done for Sinhala} \\
 \midrule
@@ -384,7 +389,7 @@ Combines retrieval with generation to reduce hallucination and dynamically integ
 Ranaldi et al. (2025): CrossRAG improved multilingual QA. &
 No noted work done. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \caption{Overview of methods applied to low-resource languages including Sinhala}
 \label{tab:low_resource_methods}
 \end{table}
