@@ -148,7 +148,7 @@ Write your abstract here. This document is a model and instructions for \LaTeX{}
 \chapter{Introduction}
 
 \section{Problem Statement}
-This research addresses a critical gap in Sinhala language processing. It aims to create an interactive model that enhances Sinhala text based on specific requirements. While various languages benefit from advanced NLP tools, Sinhala lacks similar resources. The primary objective is to develop a user-friendly, interactive language model enabling users to refine Sinhala text by eliminating grammatical errors and improving readability. This project does not aim to generate new content but focuses on enhancing existing text. By doing so, it helps the development of NLP tools tailored to Sinhala, offering individuals a valuable resource to elevate the quality of their written communication.
+This research addresses a critical gap in Sinhala language processing. The purpose of this project is to create an interactive model that enhances Sinhala text based on specific requirements. While various languages benefit from advanced NLP tools, Sinhala lacks similar resources. The primary objective is to develop a user-friendly, interactive language model enabling users to refine Sinhala text by correcting grammatical and other errors and improving readability. This system does not generate new content but focuses on enhancing input text. By doing so, it helps people, especially government officials, to elevate the quality of their written communication.
 
 
 \section{Research Questions}
@@ -169,7 +169,7 @@ How to improve the quality of formal Sinhala text generation in Large Language M
 The primary objective of this research is to enhance the quality of formal Sinhala letter generation through a Retrieval-Augmented Generation approach that combines semantic search with multilingual language models. The specific objectives are:
 
 \begin{itemize}
-    \item \textbf{Develop a two-stage retrieval architecture} combining FAISS-based dense vector search with cross-encoder reranking to improve precision in retrieving relevant Sinhala letter examples, addressing the limitations of single-stage embedding similarity approaches.
+    \item \textbf{Develop a two-stage retrieval architecture} combining FAISS-based dense vector search with cross-encoder re-ranking to improve precision in retrieving relevant Sinhala letter examples, addressing the limitations of single-stage embedding similarity approaches.
     
     \item \textbf{Implement automated information extraction} using fine-tuned XLM-RoBERTa transformers to parse informal Sinhala user prompts into structured fields (letter type, recipient, subject, purpose), enabling template-based letter generation with minimal user burden.
     
@@ -203,23 +203,23 @@ This research targets a RAG based approach to generate formal Sinhala texts for 
 \subsection{In Scope}
 
 \begin{itemize}
-    \item The research focuses mainly on formal letters which are used in formal requests, invitations, and official communications.
-    \item Information extraction from user prompts using a transformer model and interacting with the user to obtain missing information if there are any to generate the letters. 
+    \item  Writing formal letters such as requests, replies, invitations, and official communications.
+    \item Information extraction from user prompts and interacting with the user to obtain missing information if needed. 
     \item Developing a RAG based approach for formal letter generation in Sinhala Language.
     \item Using LaBSE for creating text embeddings.
-    \item Using FAISS to store the example data in Sinhala and for semantic retrieval of similar examples for user prompts.
-    \item Qualitative evaluation of the generated outputs for the user prompts using human assesment. 
+    \item Using FAISS to store the example data in Sinhala and retrieve examples based on user prompts.
+    \item Qualitative evaluation of the generated outputs  using human assessment. 
     \item Two datasets have been combined and preprocessed to form a more accurate data set as the retrieval knowledge base. 
 \end{itemize}
 
-\section{Outof Scope}
+\section{Out of Scope}
 
 \begin{itemize}
-    \item Generation of formal text other than formal letters in Sinhala like Notices, News-paper article, summary, essay writing, meeting minutes, posters are not covered in this research.
+    \item Generation of text other than formal letters. Notices, News-paper articles, summaries, essays, meeting minutes, posters, etc. are not covered in this system.
     \item Generation of informal text and spoken Sinhala are out of scope.
     \item Building a comprehensive Sinhala NLP Pipeline including tokenizers and morphological analysers is not considered. 
-    \item Error correction and grammar checking in the generated text is not addressed.
-    \item Expansion to other low-resourced languages.
+    \item Error correction and grammar checking of the generated text is not addressed.
+    \item Expansion to other languages.
 \end{itemize}
 
 \section{Contribution}
@@ -233,7 +233,7 @@ This thesis is structured into seven chapters that guide the reader through the 
 Large Language Models (LLMs) are deep neural network architectures trained on vast amounts of text data to understand and generate human language \cite{33}. The evolution of LLMs traces back to early neural language models, but the field witnessed a paradigm shift with the introduction of the Transformer architecture in 2017, which enabled efficient parallel processing of sequential data through self-attention mechanisms. This breakthrough led to the development of influential models such as BERT (Bidirectional Encoder Representations from Transformers) and GPT (Generative Pre-trained Transformer), which demonstrated unprecedented capabilities in natural language understanding and generation tasks \cite{33}. Over the years, LLMs have grown dramatically in scale and sophistication, with models like GPT-3, GPT-4, LLaMA, and BLOOM \cite{30} \cite{32} containing billions of parameters and exhibiting emergent abilities such as few-shot learning, reasoning, and multilingual understanding. These advances have revolutionized numerous applications including machine translation, question answering, text summarization, and code generation. However, despite their remarkable performance on high-resource languages like English, LLMs continue to face significant challenges with low-resource languages, where training data scarcity limits their effectiveness \cite{33}.
 
 \section{Sinhala NLP Resources}
-Sinhala is an Indo aryan language spoken by over 16 million people \citet{2}. However, it still remains under-resourced as a language in the NLP domain. Even though there is high resource availability for languages like English, when it comes to Sinhala, the resource availability, more importantly, the quality of resources, remains low. According to the widely-cited language resource classification by Joshi et al. (2020), Sinhala is a Class 1 “extremely low-resource” language, reflecting the paucity of corpora and NLP infrastructure []. To understand this properly, we need to take a look back at the evolution of Sinhala as a language in the NLP domain. Fundamental resources like Part of speech taggers and morphological analysers exists but in limited domain. As mentioned in the paper by Nisansa at el. Most of the morphological analysers developed are rule based \cite{1}, and even the ones that incorporated machine learning like the morphological analyser by Welgama at el \cite{3}, their results nor resources has become publicly available. The one that stands out with a comprehensive vocabulary is ‘sinMorphy’ which was also rule based in which also the accuracy was 85.2%.
+Sinhala is an Indo aryan language spoken by over 16 million people \cite{2}. However, it still remains under-resourced as a language in the NLP domain. Even though there is high resource availability for languages like English, when it comes to Sinhala, the resource availability, more importantly, the quality of resources, remains low. According to the widely-cited language resource classification by Joshi et al. (2020), Sinhala is a Class 1 “extremely low-resource” language, reflecting the paucity of corpora and NLP infrastructure []. To understand this properly, we need to take a look back at the evolution of Sinhala as a language in the NLP domain. Fundamental resources like Part of speech taggers and morphological analysers exists but in limited domain. As mentioned in the paper by Nisansa at el. Most of the morphological analysers developed are rule based \cite{1}, and even the ones that incorporated machine learning like the morphological analyser by Welgama at el \cite{3}, their results nor resources has become publicly available. The one that stands out with a comprehensive vocabulary is ‘sinMorphy’ which was also rule based in which also the accuracy was 85.2\%.
 
 Two specific areas highlighting these gaps are grammatical error correction and text summarization in Sinhala. In English and other high-resource languages, grammatical error detection and correction (GEC) has seen large benchmarks and neural models, but Sinhala has no comparable dataset or widely-used system. The few studies on Sinhala grammar have been largely rule-based or limited in scope. For instance, Sewwandi et al. (2021) developed a rule-based grammar checker to help primary school students identify errors in Sinhala sentences \cite{5}. Their system applied handcrafted grammatical rules (focused on basic active-voice sentence structure) and offered corrections, but such an approach cannot scale to the complexity of open-domain Sinhala text. More recently, Jayasuriya et al. (2023) presented a study on Sinhala grammatical error correction (GEC) as a “case study” of low-resource GEC \cite{6}. They emphasize that GEC is crucial for improving Sinhala writing quality and attempt to build a model despite the lack of data. And their rule-based approach has shown over 90% accuracy for gender based noun detection in complex Sinhala sentences, which is also limited in scope considering Sinhala language as a whole. Unlike English, which has large GEC corpora (e.g., CoNLL-2014 \cite{7}, BEA-2019 \cite{8}), Sinhala lacks a robust error-annotated corpus, and only scoped or prototype grammar correction tools have been reported \cite{1}. This represents a clear gap in resources and a challenge to developing high-accuracy grammar correction for Sinhala text.
 
@@ -388,7 +388,7 @@ No noted work done. \\
 \caption{Overview of methods applied to low-resource languages including Sinhala}
 \label{tab:low_resource_methods}
 \end{table}
-
+-
 \chapter{Methodology}
 The anticipated methodology as per the design science process is as follows.
 
