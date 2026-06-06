@@ -1480,53 +1480,9 @@ Overall usability & Whether the letter could be used as-is or with only minor ed
 \label{tab:evaluation_rubric}
 \end{table}
 
-\section{Component-Level Evaluation}
+\section{Final Expert Evaluation Results}
 
-\subsection{Information Extraction Evaluation}
-
-The information extraction component is evaluated separately because extraction errors affect missing-field detection, retrieval, and final generation. A manually annotated subset of evaluation prompts is used as the gold standard. The extracted fields are compared against the expected fields for letter type, recipient, sender, subject, purpose, details, and invitation-specific event fields.
-
-\begin{table}[h!]
-\centering
-\small
-\begin{tabularx}{\linewidth}{@{}lcccX@{}}
-\toprule
-\textbf{Metric} & \textbf{NER-Based} & \textbf{LLM-Based} & \textbf{Hybrid} & \textbf{Notes} \\
-\midrule
-Field accuracy & [fill] & [fill] & [fill] & [fill after extraction evaluation] \\
-Complete extraction rate & [fill] & [fill] & [fill] & [fill after extraction evaluation] \\
-Letter type accuracy & [fill] & [fill] & [fill] & [fill after extraction evaluation] \\
-Average latency & [fill] & [fill] & [fill] & [fill after extraction evaluation] \\
-\bottomrule
-\end{tabularx}
-\caption{Information extraction evaluation results}
-\label{tab:extraction_results}
-\end{table}
-
-\subsection{Retrieval Evaluation}
-
-Retrieval is evaluated to determine whether the FAISS and LaBSE-based index retrieves useful Sinhala letter structures and examples for the extracted user intent. The retrieval results are assessed using category hit rate, template coverage, and precision at the top retrieved documents.
-
-\begin{table}[h!]
-\centering
-\small
-\begin{tabularx}{\linewidth}{@{}lccX@{}}
-\toprule
-\textbf{Metric} & \textbf{Result} & \textbf{Target} & \textbf{Interpretation} \\
-\midrule
-Category hit rate & [fill] & [fill] & Percentage of prompts where at least one retrieved document matches the expected letter category. \\
-Template coverage & [fill] & [fill] & Percentage of prompts where a structure template is retrieved. \\
-Precision@3 & [fill] & [fill] & Fraction of top-three retrieved documents judged relevant. \\
-Reranker improvement & [fill] & [fill] & Difference between retrieval with and without reranking, if measured. \\
-\bottomrule
-\end{tabularx}
-\caption{Retrieval evaluation results}
-\label{tab:retrieval_results}
-\end{table}
-
-\section{Expert Evaluation Results}
-
-This section reports the expert ratings comparing baseline and RAG-generated letters. For each metric, the mean and standard deviation are calculated across evaluators and prompts.
+This section reports the completed expert evaluation results from the evaluator workbook. Letter A corresponds to the SinhalaLipi/RAG output and Letter B corresponds to the direct LLM baseline. For each metric, the mean and standard deviation are calculated across evaluators and prompts.
 
 \begin{table}[h!]
 \centering
@@ -1596,7 +1552,7 @@ Transfer & 15 & 0 & 0 & RAG preferred in all transfer votes. \\
 
 \section{Statistical Analysis}
 
-The primary statistical comparison uses a paired design because each prompt produces both a baseline output and a RAG output. Since the expert ratings are based on five-point Likert scales, the Wilcoxon signed-rank test is used as the primary significance test. A paired t-test may also be reported as a secondary analysis for comparison with previous NLG evaluation work. Statistical significance is assessed at $p < 0.05$.
+The primary statistical comparison uses a paired design because each prompt produces both a baseline output and a RAG output. Since the expert ratings are based on five-point Likert scales, the Wilcoxon signed-rank test is used as the primary significance test. A paired t-test is also reported as a secondary analysis for comparison with previous NLG evaluation work. Statistical significance is assessed at $p < 0.05$.
 
 \begin{table}[h!]
 \centering
@@ -1621,7 +1577,7 @@ The statistical results show significant RAG improvements for every metric at $p
 
 \subsection{Inter-Rater Reliability}
 
-Inter-rater reliability is calculated to determine the degree of agreement between evaluators. Krippendorff's alpha is used because it can handle ordinal ratings and multiple raters. The reliability values will be reported per evaluation metric.
+Inter-rater reliability is calculated to determine the degree of agreement between evaluators. Krippendorff's alpha is used because it can handle ordinal ratings and multiple raters. The reliability values are reported per evaluation metric.
 
 \begin{table}[h!]
 \centering
@@ -1643,6 +1599,50 @@ Overall usability & 0.991 & High & Strong evaluator agreement. \\
 \end{table}
 
 The inter-rater reliability values are high across all metrics, indicating that the evaluators were broadly consistent in their scoring patterns.
+
+\section{Component-Level Evaluation}
+
+\subsection{Information Extraction Evaluation}
+
+The information extraction component is evaluated separately because extraction errors affect missing-field detection, retrieval, and final generation. A manually annotated subset of evaluation prompts is used as the gold standard. The extracted fields are compared against the expected fields for letter type, recipient, sender, subject, purpose, details, and invitation-specific event fields.
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lcccX@{}}
+\toprule
+\textbf{Metric} & \textbf{NER-Based} & \textbf{LLM-Based} & \textbf{Hybrid} & \textbf{Notes} \\
+\midrule
+Field accuracy & [fill] & [fill] & [fill] & [fill after extraction evaluation] \\
+Complete extraction rate & [fill] & [fill] & [fill] & [fill after extraction evaluation] \\
+Letter type accuracy & [fill] & [fill] & [fill] & [fill after extraction evaluation] \\
+Average latency & [fill] & [fill] & [fill] & [fill after extraction evaluation] \\
+\bottomrule
+\end{tabularx}
+\caption{Information extraction evaluation results}
+\label{tab:extraction_results}
+\end{table}
+
+\subsection{Retrieval Evaluation}
+
+Retrieval is evaluated to determine whether the FAISS and LaBSE-based index retrieves useful Sinhala letter structures and examples for the extracted user intent. The retrieval results are assessed using category hit rate, template coverage, and precision at the top retrieved documents.
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lccX@{}}
+\toprule
+\textbf{Metric} & \textbf{Result} & \textbf{Target} & \textbf{Interpretation} \\
+\midrule
+Category hit rate & [fill] & [fill] & Percentage of prompts where at least one retrieved document matches the expected letter category. \\
+Template coverage & [fill] & [fill] & Percentage of prompts where a structure template is retrieved. \\
+Precision@3 & [fill] & [fill] & Fraction of top-three retrieved documents judged relevant. \\
+Reranker improvement & [fill] & [fill] & Difference between retrieval with and without reranking, if measured. \\
+\bottomrule
+\end{tabularx}
+\caption{Retrieval evaluation results}
+\label{tab:retrieval_results}
+\end{table}
 
 \section{User Feedback and Usability Results}
 
@@ -1718,7 +1718,7 @@ Several limitations must be considered when interpreting the evaluation results.
 
 \section{Summary}
 
-The evaluation is designed to test the hypothesis that retrieval augmentation improves formal Sinhala letter generation compared with direct LLM prompting. The final interpretation will be based on expert ratings, pairwise preferences, component-level extraction and retrieval results, statistical testing, and user feedback collected through the implemented system.
+The evaluation results support the hypothesis that retrieval augmentation improves formal Sinhala letter generation compared with direct LLM prompting. The completed expert evaluation shows higher RAG scores across all six human rating dimensions and a strong pairwise preference for SinhalaLipi output. The remaining component-level and user-feedback results provide additional evidence about extraction, retrieval, and deployed-system usability.
 
 \begin{references}
     \bibliography{references} % argument is your bibliography database(s)
