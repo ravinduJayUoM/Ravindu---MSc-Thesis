@@ -395,19 +395,20 @@ No noted work done. \\
 \end{table}
 
 \chapter{Methodology}
-The anticipated methodology as per the design science process is as follows.
+This chapter describes the methodology used to design, construct, and evaluate the proposed Retrieval-Augmented Generation (RAG) approach for formal Sinhala letter generation. The methodology follows a design science research process: first identifying the limitations of general-purpose LLMs for Sinhala formal writing, then constructing an artifact that combines a curated Sinhala letter corpus, semantic retrieval, information extraction, prompt augmentation, and model-agnostic text generation. The resulting system is evaluated by comparing its output against a non-RAG LLM baseline using expert judgement.
 
 \section{Research Design}
-This section covers the proposed design by providing design assumptions, design details of RAG model, user interface, LLM and the underlying data. 
+This section presents the research design, including the assumptions made during system construction, the RAG pipeline followed by the proposed system, the datasets used to build the knowledge base, the preprocessing steps applied to the data, and the methods used for retrieval and generation.
 
 \subsection{Design Assumptions}
 The statements mentioned below are assumed to be true by the researchers with regard to the research design.
 
 \begin{itemize}
     \item The research design approach considered the government letters provided by the University of Moratuwa and the dataset created by the authors.
-    \item The users or the evaluators will provide clear prompts to the system.
-    \item General Purpose LLMs have the knowledge on Formal Letter Templates and Structures, even for the Sinhala Language. 
-    \item The evaluation metrics used in this research, which are <add> and human evaluation to guage the structure, grammar, and fluency, are reliable in Sinhala Text Generation despite being designed for high-resourced languages.
+    \item The users or the evaluators will provide prompts that contain at least the core intent of the letter, even if some supporting details are missing.
+    \item General-purpose multilingual LLMs contain partial knowledge of formal letter templates and Sinhala writing conventions, but this knowledge is insufficient for consistently producing structurally correct and contextually appropriate formal Sinhala letters without additional grounding.
+    \item A curated Sinhala letter corpus can provide useful structural and stylistic examples that compensate for the limited Sinhala-specific knowledge available in general-purpose LLMs.
+    \item Human expert evaluation is necessary for assessing grammar, formal register, cultural appropriateness, and structural correctness, as automated NLG metrics alone cannot reliably capture the quality of formal Sinhala writing.
 \end{itemize}
 
 The high-level architecture of the proposed research design approach is illustrated in Figure \ref{fig:3.1}
@@ -420,6 +421,41 @@ The high-level architecture of the proposed research design approach is illustra
 \end{figure}
 
 \subsection{Retrieval-Augmented Generation Pipeline}
+The proposed method uses Retrieval-Augmented Generation to ground the LLM in examples of formal Sinhala writing before generating the final letter. Instead of sending the user's prompt directly to the LLM, the system first converts the prompt into structured metadata, retrieves relevant letter structures and examples from a Sinhala knowledge base, and constructs an enhanced prompt containing both the user requirement and retrieved context.
+
+The methodology follows five main stages:
+
+\begin{enumerate}
+    \item \textbf{Information Extraction:} The user prompt is analysed to identify the letter type, recipient, sender, subject, purpose, and supporting details. A transformer-based XLM-RoBERTa NER model is used for structured extraction, while an LLM-based extractor is used as a backup strategy for prompts where the NER model fails to identify all required fields or where the user input is highly informal.
+    \item \textbf{Gap Detection:} The extracted fields are checked against the minimum information required for the identified letter type. If mandatory fields are missing, the system asks clarification questions in Sinhala before continuing.
+    \item \textbf{Retrieval:} The extracted metadata is converted into a Sinhala-aware semantic query. FAISS retrieves candidate documents from the indexed Sinhala letter corpus, including one structure template and relevant example letters.
+    \item \textbf{Reranking and Prompt Construction:} Retrieved examples are reranked using a cross-encoder to improve relevance. The final context is combined with the original prompt and extracted fields to form an enhanced prompt.
+    \item \textbf{Letter Generation:} The enhanced prompt is passed to the configured LLM to generate a complete formal Sinhala letter. The generated output can later be reviewed and rated by users or evaluators.
+\end{enumerate}
+
+This pipeline directly addresses the low-resource nature of Sinhala by shifting part of the burden from the model's internal parameters to an external, curated, domain-specific knowledge base.
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}p{3.4cm}Xp{3.2cm}p{3.3cm}@{}}
+\toprule
+\textbf{Research Question} & \textbf{Method} & \textbf{Data Used} & \textbf{Expected Output} \\
+\midrule
+Limitations of current LLMs for formal Sinhala text & Compare direct LLM generation against expert expectations for formal Sinhala letters & Baseline generated letters and expert comments & Identification of grammar, structure, register, and relevance limitations \\
+\addlinespace
+Effectiveness of FAISS and LaBSE retrieval & Embed the curated corpus using LaBSE and retrieve examples through FAISS based on extracted prompt metadata & Curated Sinhala letter corpus and structure templates & Relevant structure templates and example letters for each user prompt \\
+\addlinespace
+RAG vs. standard LLM generation & Generate paired outputs using baseline LLM prompting and the full RAG pipeline & Common test prompt set across formal letter categories & Comparative evidence on whether RAG improves generated letter quality \\
+\addlinespace
+Evaluation criteria for Sinhala formal letters & Use expert judgement with a rubric covering grammar, structure, contextual relevance, and fluency & Generated baseline and RAG letters & Human evaluation scores and qualitative feedback \\
+\addlinespace
+Limitations of RAG for low-resource Sinhala & Analyse system behavior, retrieval coverage, and expert feedback & Evaluation outputs, retrieved examples, and system observations & Discussion of methodological and practical limitations \\
+\bottomrule
+\end{tabularx}
+\caption{Mapping of research questions to methodology}
+\label{tab:rq_methodology_mapping}
+\end{table}
 
 \section{Pilot Project: Formal Letter Generation in Sinhala}
 This research study specifically targets the improvement of text generation in Sinhala in LLMs through a more focused study on Sinhala Formal Letter writing. 
@@ -431,13 +467,13 @@ Sinhala formal letters is a significant part of written communication in Sri Lan
 The dataset in this research was acquired through three approaches to ensure comprehensive coverage of formal letters and to avoid biasness in creating the dataset.
 
 \begin{enumerate}
-    \item First, we reviewed the past Sinhala Language and Literature GCE Ordinary Level Examination papers from year 2011 - 2025,  model papers for Sinhala, and Sinhala Language and Literature papers for Grade 10 and Grade 11 from different provinces and schools from which we identified the formal letter writing questions. The identified questions were then extracted through an online OCR scanning API to digitize as many of the papers were obtained either as physical printed documents or scanned image based PDF files(text could not be extracted from these PDFs). The converted data were stored in a CSV file formatted as given in the Table<table no>. 
+    \item First, we reviewed the past Sinhala Language and Literature GCE Ordinary Level Examination papers from year 2011 - 2025, model papers for Sinhala, and Sinhala Language and Literature papers for Grade 10 and Grade 11 from different provinces and schools from which we identified the formal letter writing questions. The identified questions were digitized using an OCR-enabled scanning API because many of the papers were available either as printed documents or as scanned image-based PDF files from which text could not be directly extracted. The converted data were then stored in the structured CSV format used by the knowledge base.
     \item Secondly, we collected formal letter prompts/questions from online resources, and other model papers and distributed the questions among a group of students who have successfully passed the GCE O/L examination with A passes for Sinhala Language and Literature. They were then asked to write formal letters for the given prompts and they were then entered to the dataset to make this more authentic. 
-    \item Finally, aiming to capture the real-world examples, we obtained a vast selection of real formal letters sent from and to various government institutions, banks, schools by various professionals and general public alike. These letters were collected from a dataset provided by the Moratuwa University which included a total of 700<todo> letters and also through personal contacts. The dataset received from the University was already digitized and were available as text files which were later put into the same CSV file. The letters obtained from the personal contacts were in physical documents and they were digitized using OCR technology enabled API online and were then stored in the dataset as well. <todo> - add the API tool used for OCR scanning.
+    \item Finally, aiming to capture real-world examples, we obtained formal letters sent from and to government institutions, banks, schools, professional bodies, and members of the public. The larger raw collection was reviewed and filtered, and 150 high-quality curated letters were selected for the final retrieval corpus. The dataset received from the University of Moratuwa was already digitized and available as text files, while the letters obtained through personal contacts were digitized using OCR before being converted into the same CSV schema.
 \end{enumerate}
 
 \section{Data Preprocessing}
-The collected dataset was pre-processed in the following ways to make it more suited for the model.
+The collected dataset was pre-processed to make it suitable for embedding, retrieval, and prompt construction. The goal of preprocessing was not to rewrite the letters, but to remove irrelevant noise, preserve useful formal writing patterns, and represent each document using a consistent schema.
 
 \subsection{Removing lengthy letters}
 The letter contents with more than 150 words were manually removed from the dataset. These texts were challenging to deal with and such letters made the model deviate from what was expected as output. Some of these lengthy letters included a copy of former letters sent, and forms to fill and name lists and their descriptions. 
@@ -469,23 +505,22 @@ Original: "මෙම ලිපිය 2022 මාර්තු 15 වැනි ද
 After replacement: "මෙම ලිපිය <date>  වැනි දා ලියන ලදී."
 
 \subsection{Named Entity Recognition}
-As we collected actual letters from institutions and personal contacts, ensuring the privacy of these letters was important. Therefore, a Named Entity Recognition(NER) model was trained to detect and remove the named entities from the main body of the letters. These identified named entities included names of people and institutions, and geographical locations
+As we collected actual letters from institutions and personal contacts, ensuring the privacy of these letters was important. Therefore, a Named Entity Recognition (NER) model was trained to detect and remove named entities from the main body of the letters. These identified named entities included names of people, institutions, and geographical locations.
 
 \subsubsection{Example}
 Original: "මා නිමල් පෙරේරා විසින් මහනුවර රිජන්සි පාසලට ලියන ලද ලිපියකි." 
 After NER and anonymization: "මා <NAME> විසින් ලියන ලද ලිපියකි."
 
-Given below is a description of the properties of the final csv file.
-
-<Add Table>
+After cleaning and anonymization, each document was represented using a structured CSV schema containing a unique identifier, letter category, document type, register level, language, source, title, content, tags, and rating. The corpus contains both complete letter examples and structure templates so that retrieval can provide the LLM with both content-level examples and format-level guidance.
 
 \section{Technology Stack}
 
 \subsection{Text Embedding}
 
 \subsubsection{LaBSE}
-LaBSE is a Language-agnostic BERT sentence embedding model that supports 109 languages[x1]. This model encodes text into high-dimensional vectors and is trained to mine for translations of sentences. However, the model’s usages extend beyond translation, enabling the users to utilize LaBSE for text classification, semantic similarity, clustering and other NLP tasks.
-In this research, we have used the LaBSE model to vectorize(create an embedding) Sinhala text data in order to convert it into a FAISS Index-based database. 
+LaBSE is a Language-agnostic BERT sentence embedding model designed to produce sentence-level representations across more than one hundred languages. This model encodes text into high-dimensional vectors and was originally trained for cross-lingual sentence alignment. However, its usages extend beyond translation, enabling semantic similarity search, clustering, and retrieval across languages.
+
+In this research, LaBSE is used to create embeddings for Sinhala letter examples, structure templates, and user-derived search queries. The main reason for selecting LaBSE is that it can represent Sinhala text in a multilingual semantic vector space without requiring a Sinhala-specific embedding model to be trained from scratch. This is particularly useful for low-resource language settings where large monolingual embedding datasets are not available.
 
 \subsection{Semantic Retrieval}
 
@@ -510,28 +545,32 @@ The FAISS-based retrieval system follows a two-phase architecture:
 
 \textbf{Phase 1 - Indexing (Offline):}
 \begin{enumerate}
-    \item Letter corpus is loaded from CSV containing anonymized Sinhala letters
-    \item Each letter body is encoded into 768-dimensional vectors using LaBSE
-    \item Vectors are stored in FAISS IndexFlatL2 structure for exact similarity search
-    \item Metadata (letter type, category, formality level) is maintained in parallel arrays synchronized with vector indices
-    \item Index is persisted to disk for rapid loading during inference
+    \item The cleaned Sinhala letter corpus is loaded from the CSV knowledge base.
+    \item Each row is converted into a document consisting of the title, content, and metadata fields such as letter category, document type, register, source, tags, and rating.
+    \item Long documents are split into overlapping chunks so that each indexed unit remains within a suitable retrieval length.
+    \item Each chunk is embedded using LaBSE.
+    \item The resulting vectors are stored in a FAISS vector index and persisted locally so that the index can be reused without rebuilding it for every application run.
 \end{enumerate}
 
 \textbf{Phase 2 - Retrieval (Online):}
 \begin{enumerate}
-    \item User prompt is encoded into 768-dimensional query vector using the same LaBSE model
-    \item FAISS performs k-nearest neighbor search using L2 distance (equivalent to cosine similarity after normalization)
-    \item Top-20 candidate documents are retrieved based on embedding similarity
-    \item Retrieved documents are passed to the reranking stage for precision refinement
+    \item The extracted user intent is converted into a Sinhala-aware retrieval query using the letter type, subject, purpose, and details.
+    \item The query is embedded using the same LaBSE model used during indexing.
+    \item FAISS performs similarity search to retrieve candidate documents from the vector index.
+    \item Retrieved candidates are filtered using metadata such as \texttt{letter\_category} and \texttt{doc\_type}, allowing the system to separately retrieve a structure template and example letters.
+    \item The selected examples are passed to the reranking stage for precision refinement before prompt construction.
 \end{enumerate}
 
 \textbf{Index Configuration:}
 
-The system employs \texttt{IndexFlatL2}, which performs exhaustive exact search. While approximate methods (e.g., IVF, HNSW) offer faster search for large datasets, exact search was chosen for this research to ensure:
+The system uses FAISS through the LangChain vector store interface. For the scale of this research corpus, exact similarity search is sufficient and avoids the additional configuration complexity of approximate indexes. While approximate methods such as IVF or HNSW would be useful for very large corpora, the current corpus size allows the system to prioritize deterministic retrieval and simple reproducibility.
+
+This indexing method provides:
 \begin{itemize}
-    \item 100\% recall during evaluation (no retrieval errors from approximation)
-    \item Deterministic results for reproducible experiments
-    \item Negligible latency penalty for small corpus (<1ms search time for 150 documents)
+    \item local operation without external vector database dependencies,
+    \item persistent storage of the FAISS index for reuse,
+    \item metadata-aware retrieval of structure templates and examples, and
+    \item sufficient retrieval speed for an interactive letter generation workflow.
 \end{itemize}
 
 This design enables rapid prototyping while maintaining the flexibility to scale to larger corpora using approximate indexing methods in future work.
@@ -547,8 +586,7 @@ While FAISS provides efficient initial retrieval through embedding similarity, i
     \item Encodes query and documents separately using LaBSE
     \item Computes similarity through vector distance metrics
     \item Fast but semantically limited (cannot model query-document interactions)
-    \item Retrieves top-20 candidate documents
-    \item Latency: ~5ms
+    \item Retrieves a candidate set of structure templates and examples from the indexed corpus
 \end{itemize}
 
 \textbf{Stage 2 - Cross-Encoder Reranking:}
@@ -556,8 +594,7 @@ While FAISS provides efficient initial retrieval through embedding similarity, i
     \item Encodes query and document together as a single concatenated sequence
     \item Attention mechanism models interactions between query and document tokens
     \item Produces a relevance score for each (query, document) pair
-    \item Reranks the 20 candidates and selects top-3 most relevant
-    \item Latency: ~100ms for 20 pairs
+    \item Reranks the candidate examples and selects the most relevant ones for prompt construction
 \end{itemize}
 
 \textbf{Model Selection:}
@@ -566,16 +603,16 @@ The cross-encoder model \texttt{cross-encoder/ms-marco-MiniLM-L-6-v2} was select
 \begin{itemize}
     \item \textbf{Compact Architecture:} 6-layer MiniLM (22.7M parameters) balances accuracy and inference speed
     \item \textbf{Ranking Specialization:} Trained on MS MARCO passage ranking dataset for relevance scoring
-    \item \textbf{Zero-Shot Transfer:} While not trained on Sinhala, multilingual BERT-based models demonstrate reasonable cross-lingual transfer due to shared Unicode patterns and linguistic structures
+    \item \textbf{Practical Zero-Shot Use:} Although it is not trained specifically for Sinhala formal letters, it provides a lightweight reranking mechanism suitable for comparing semantically related query-document pairs in a research prototype
 \end{itemize}
 
 \textbf{Design Trade-offs:}
 
 The two-stage approach achieves optimal balance between speed and accuracy:
 \begin{itemize}
-    \item \textbf{Efficiency:} Avoids exhaustive cross-encoding of entire corpus (would require 120 forward passes per query)
-    \item \textbf{Precision:} Improves Precision@3 by 19\% compared to FAISS-only retrieval
-    \item \textbf{Scalability:} Total latency (~105ms) remains acceptable for interactive use while maintaining high retrieval quality
+    \item \textbf{Efficiency:} Avoids exhaustive cross-encoding of the entire corpus by reranking only a small candidate set
+    \item \textbf{Precision:} Allows the system to refine FAISS candidates before selecting the examples sent to the LLM
+    \item \textbf{Scalability:} Keeps reranking limited to a small candidate set rather than applying an expensive model to the full corpus
 \end{itemize}
 
 \textbf{Integration with Pipeline:}
@@ -583,14 +620,14 @@ The two-stage approach achieves optimal balance between speed and accuracy:
 Reranking is implemented as an optional enhancement controlled through configuration flags (\texttt{use\_reranker=True}). This modular design enables controlled experiments comparing:
 \begin{itemize}
     \item Baseline: FAISS retrieval only (top-3 directly from embedding similarity)
-    \item Enhanced: FAISS + Cross-encoder reranking (refined top-3 from 20 candidates)
+    \item Enhanced: FAISS + Cross-encoder reranking (refined examples selected from a retrieved candidate set)
 \end{itemize}
 
-Experimental results demonstrate that reranking significantly improves the semantic relevance of retrieved examples, directly contributing to higher-quality letter generation by providing more contextually appropriate templates to the LLM.
+The purpose of this design is to improve the semantic relevance of retrieved examples before they are provided to the LLM, thereby increasing the chance that the generated letter follows an appropriate structure and register.
 
 \subsection{Transformer Model}
 
-The system employs transformer-based Named Entity Recognition (NER) for two critical functions: (1) extracting structured information from user prompts, and (2) anonymizing the letter corpus before embedding to remove personal identifiers that could bias retrieval.
+The methodology includes transformer-based Named Entity Recognition (NER) for two critical functions: (1) extracting structured information from user prompts, and (2) anonymizing the letter corpus before embedding to remove personal identifiers that could bias retrieval.
 
 \textbf{Model Selection - XLM-RoBERTa:}
 
@@ -608,15 +645,16 @@ XLM-RoBERTa-base was selected as the foundation model for NER tasks due to its s
 
 \textbf{Fine-Tuning Approach:}
 
-The base XLM-RoBERTa model is fine-tuned on Sinhala letter data for token-level classification using the BIO (Begin-Inside-Outside) tagging scheme. The model learns to identify six entity types critical for letter generation:
+The base XLM-RoBERTa model is fine-tuned on Sinhala letter data for token-level classification using the BIO (Begin-Inside-Outside) tagging scheme. The model learns to identify entity types critical for letter generation:
 
 \begin{itemize}
-    \item \textbf{LETTER\_TYPE:} Category classification (application, request, complaint)
+    \item \textbf{LETTER\_TYPE:} Category classification across formal letter types such as request, application, complaint, invitation, appreciation, recommendation, inquiry, transfer, and leave
     \item \textbf{RECIPIENT:} Intended recipient of the letter
     \item \textbf{SENDER:} Letter sender identification
     \item \textbf{SUBJECT:} Subject line or main topic
     \item \textbf{PURPOSE:} Primary intent or reason for writing
-    \item \textbf{DATE:} Time-related information (deadlines, dates)
+    \item \textbf{DETAILS:} Supporting details required to make the generated letter specific and useful
+    \item \textbf{DATE/TIME/VENUE:} Event-related information for invitation and event-based letters
 \end{itemize}
 
 \textbf{Training Configuration:}
@@ -634,7 +672,10 @@ The base XLM-RoBERTa model is fine-tuned on Sinhala letter data for token-level 
 \textbf{1. Information Extraction NER:}
 Extracts structured fields from informal user prompts to populate letter templates. For example, from the prompt "මම අසනීපෙන් නිසා නිවාඩුවක් අවශ්‍යයි", the model identifies \texttt{letter\_type=request} and \texttt{purpose}="අසනීප නිවාඩුවක්".
 
-\textbf{2. Privacy-Preserving NER:}
+\textbf{2. LLM-Based Backup Extraction:}
+Because user prompts may be short, informal, ambiguous, or written in mixed Sinhala-English forms, a schema-guided LLM extractor is used as a backup strategy. If the transformer-based extractor fails to populate required fields, the LLM is prompted to return a structured JSON object containing the same schema fields. This hybrid strategy combines the speed and determinism of NER with the contextual reasoning ability of LLMs.
+
+\textbf{3. Privacy-Preserving NER:}
 Detects and replaces personal entities (names, locations, organizations) in the corpus before embedding. This ensures FAISS retrieval focuses on structural and semantic patterns rather than entity-specific content. Original text "මම සුනිල් පෙරේරා මොරටුව විශ්වවිද්‍යාලයට..." becomes "මම <PERSON> <ORGANIZATION>ට..." before vectorization.
 
 \textbf{Design Rationale:}
@@ -646,7 +687,7 @@ Transformer-based NER was chosen over rule-based extraction (regex patterns) bec
     \item \textbf{Generalization:} Performs well on unseen phrases not covered by fixed patterns
 \end{itemize}
 
-Evaluation on held-out test data demonstrates 88.4\% entity-level F1 score, significantly outperforming regex baselines (45.2\%) and validating the transformer approach for Sinhala NER tasks.
+The NER component is therefore used as a structured extraction and anonymization mechanism, while the LLM backup strategy improves robustness when the prompt contains implicit information that is difficult to capture using token-level entity extraction alone.
 
 \subsection{Text Generation: Plug-and-Play LLM Architecture}
 
@@ -718,12 +759,13 @@ These three structures maintain a strict synchronization invariant: document at 
 
 \textbf{Hybrid Retrieval Strategy:}
 
-The system combines vector search with metadata constraints through a two-step process:
+The system combines vector search with metadata constraints through the following process:
 
 \begin{enumerate}
-    \item \textbf{Pre-Retrieval Filtering:} If metadata constraints are specified (e.g., \texttt{letter\_category="request"}), the system creates a filtered subset of the corpus before vector search
-    \item \textbf{Vector Search:} FAISS search executes on the filtered subset or full corpus
-    \item \textbf{Post-Retrieval Augmentation:} Retrieved results include both similarity scores and metadata fields for downstream processing
+    \item \textbf{Vector Search:} FAISS retrieves a candidate set using semantic similarity between the Sinhala-aware query and indexed document chunks.
+    \item \textbf{Metadata Filtering:} The candidate set is filtered using metadata constraints such as \texttt{letter\_category} and \texttt{doc\_type}.
+    \item \textbf{Bucketed Retrieval:} The system separately retrieves one structure template and a small number of complete example letters so that the final prompt receives both format guidance and content guidance.
+    \item \textbf{Fallback Retrieval:} If no category-specific document is found, the system falls back to unfiltered documents of the same document type, preventing generation from failing due to sparse category coverage.
 \end{enumerate}
 
 \textbf{Automatic Metadata Extraction:}
@@ -754,177 +796,28 @@ For this research scope (150-document corpus), in-memory filtering was selected 
 The metadata schema is designed to support future extension to graph databases if corpus scale grows to thousands of documents, where relationship modeling (hierarchical categories, document similarity edges) would provide additional value.
 
 \section{Embedding and Indexing Process}
-Indexing and embedding is done using FAISS (Facebook AI Similarity Search), which is a highly efficient indexing library specifically designed for rapid similarity search in dense vector embeddings. It supports high-dimensional embedding spaces, enabling swift retrieval of semantically similar data. FAISS employs various optimized indexing methods, including clustering-based quantization and hierarchical structures, facilitating efficient approximate nearest neighbor searches. This makes FAISS especially suitable for the letter-generation pipeline in Sinhala, where categorized and cleaned letter sections are embedded into vector representations. Leveraging FAISS indexing allows rapid retrieval of structurally and contextually relevant letter bodies during prompt-based generation tasks, significantly improving response accuracy and speed within retrieval-augmented generation (RAG) systems. Consequently, FAISS’s effectiveness in managing and retrieving large-scale embeddings ensures the pipeline consistently generates coherent, contextually appropriate Sinhala letters tailored to user prompts. Detailed explanation on how this is done is explained in the following section.
+The embedding and indexing process converts the cleaned Sinhala letter corpus into a searchable vector knowledge base. Each CSV row is converted into a document by combining the title and content fields, while the remaining fields are stored as metadata. This allows the retrieval system to search by semantic similarity while still preserving important document attributes such as category, document type, register, source, tags, and rating.
+
+The document text is split into manageable chunks before embedding. Chunking prevents long letters from dominating the retrieval context and ensures that each retrieved unit remains focused enough to be useful in prompt construction. The chunks are then embedded using LaBSE and stored in a FAISS vector index. The index is saved locally so that the system can load it during runtime instead of rebuilding it for each request.
+
+During inference, the extracted user intent is converted into a Sinhala-aware query and embedded using the same LaBSE model. FAISS retrieves semantically similar chunks, after which metadata filtering separates structure templates from example letters. This method ensures that the generated prompt contains both a formal letter structure and concrete examples of Sinhala formal writing.
 
 \section{Generation Pipeline}
-The generation pipeline employs retrieval-augmented generation (RAG), where the most similar letter structures are retrieved from the FAISS-indexed dataset. After retrieval, the pipeline utilizes prompt engineering techniques—discussed in detail in the subsequent section—to construct an enhanced prompt that is passed to the configured LLM for generation. The pipeline is designed to be model-agnostic: the LLM used at this stage is determined entirely by configuration, enabling any supported provider (such as Google Gemini or Ollama-hosted models) to be used interchangeably. Following generation, the output is evaluated by users, and the prompt is refined based on their feedback. Acceptable outputs undergo named entity recognition (NER) processing to remove entities before being re-embedded and added back to the FAISS index, continuously enhancing the dataset's quality and breadth.
+The generation pipeline begins after the system has extracted the user's intent and retrieved relevant documents from the knowledge base. The enhanced prompt given to the LLM contains four main components: the original user prompt, the structured metadata extracted from the prompt, the retrieved structure template, and the retrieved example letters. The structure template guides the format of the generated letter, while the examples provide stylistic and linguistic grounding in formal Sinhala.
 
-\section{Hypothesis Testing Framework}
+The prompt construction step explicitly instructs the LLM to generate only in Sinhala, maintain formal written register, avoid code-mixing, and produce a complete letter rather than a summary or explanation. This is important because general-purpose multilingual LLMs may otherwise mix English terms, omit formal letter sections, or produce informal Sinhala.
 
-To test the hypotheses stated in Chapter 1 (Section 1.4), this research employs a rigorous comparative evaluation design that directly addresses the claims made in both the null hypothesis (H0) and alternative hypothesis (H1). The testing framework is designed to provide empirical evidence regarding whether RAG significantly improves formal Sinhala letter generation compared to standard LLM approaches.
+The pipeline is model-agnostic. The generation model is selected through configuration and may be a cloud-based model such as Google Gemini or OpenAI, an Azure OpenAI deployment, a HuggingFace model, or a locally hosted Ollama model such as Aya 8B. This design allows the same RAG pipeline to be evaluated across different LLM providers without changing the retrieval or prompt construction logic.
 
-\subsection{Experimental Design}
+Following generation, the output can be evaluated by users or expert evaluators. High-quality generated letters can be anonymized and added back to the knowledge base as user-generated examples, allowing the corpus to grow over time. Automatic prompt optimization based on feedback is not part of the current methodology and is treated as a possible extension for future work.
 
-The hypothesis testing follows a between-subjects comparative design with two experimental conditions:
+\section{Methodological Limitations}
 
-\textbf{Baseline Condition (Control):}
-\begin{itemize}
-    \item \textbf{Model:} Multilingual LLM without retrieval augmentation (using the same configured LLM as the experimental condition, ensuring a fair comparison)
-    \item \textbf{Input:} User prompt is directly passed to the LLM with minimal prompt engineering
-    \item \textbf{Context:} No retrieved letter examples provided; model relies solely on its pretrained knowledge of Sinhala formal writing conventions
-    \item \textbf{Purpose:} Represents the current state-of-the-art for multilingual LLM performance on low-resource formal text generation
-\end{itemize}
+Several methodological limitations must be acknowledged. First, although the retrieval corpus contains curated Sinhala formal letters across the selected letter categories, it is still small compared with large-scale corpora available for high-resource languages. This limits the diversity of examples that can be retrieved for rare or highly specific user requests. Secondly, the corpus is manually curated and therefore depends on the quality and representativeness of the selected letters.
 
-\textbf{Experimental Condition (RAG):}
-\begin{itemize}
-    \item \textbf{Model:} Same multilingual LLM with the full RAG pipeline applied
-    \item \textbf{Input:} User prompt undergoes information extraction, semantic retrieval (FAISS + cross-encoder reranking), and augmented prompt construction
-    \item \textbf{Context:} Top-3 most relevant letter examples retrieved from knowledge base and included in generation context
-    \item \textbf{Purpose:} Tests whether the retrieval-augmented approach compensates for limited Sinhala training data in the underlying model
-\end{itemize}
+Thirdly, OCR and manual preprocessing may introduce minor transcription or normalization errors, especially when working with scanned Sinhala documents. These errors can affect both embeddings and generated output if not identified during manual review. Fourthly, the generated quality depends partly on the selected LLM provider. The RAG design reduces this dependency by grounding the model in retrieved examples, but it does not completely remove differences between LLMs.
 
-\subsection{Evaluation Metrics}
-
-The evaluation metrics are explicitly aligned with the hypothesis variables to ensure each claim in H0 and H1 can be empirically tested:
-
-\subsubsection{Grammatical Correctness}
-\textbf{Definition:} Absence of grammatical errors including verb conjugation, noun declension, case agreement, honorific appropriateness, and syntactic structure.
-
-\textbf{Assessment Criteria:}
-\begin{itemize}
-    \item Verb form correctness (tense, aspect, honorific level)
-    \item Subject-verb agreement
-    \item Noun case marking accuracy
-    \item Pronoun usage appropriateness (honorific vs. informal)
-    \item Sentence structure validity
-\end{itemize}
-
-\textbf{Rating Scale:} 1 (Multiple critical errors) to 5 (Grammatically flawless)
-
-\subsubsection{Structural Correctness}
-\textbf{Definition:} Adherence to conventional Sinhala formal letter structure including proper sequencing of components (salutation, subject line, body, closing).
-
-\textbf{Assessment Criteria:}
-\begin{itemize}
-    \item Presence of all required structural components
-    \item Correct ordering of letter sections
-    \item Appropriate use of formal opening and closing phrases
-    \item Logical paragraph organization
-    \item Proper formatting conventions
-\end{itemize}
-
-\textbf{Rating Scale:} 1 (Missing or incorrect structure) to 5 (Perfect structural adherence)
-
-\subsubsection{Contextual Relevance}
-\textbf{Definition:} Appropriateness of content to the specified letter type, recipient, and purpose; semantic coherence with user intent.
-
-\textbf{Assessment Criteria:}
-\begin{itemize}
-    \item Content alignment with stated purpose
-    \item Appropriate information inclusion/omission
-    \item Relevance to specified recipient and context
-    \item Semantic coherence throughout the letter
-    \item Appropriate tone for the letter category
-\end{itemize}
-
-\textbf{Rating Scale:} 1 (Irrelevant or incoherent) to 5 (Perfectly contextual)
-
-\subsubsection{Fluency and Naturalness}
-\textbf{Definition:} Natural flow of written Sinhala; absence of awkward phrasing or machine-translation-like constructions; maintenance of formal register (ලිඛිත භාෂාව).
-
-\textbf{Assessment Criteria:}
-\begin{itemize}
-    \item Sentence flow and readability
-    \item Lexical appropriateness (formal vs. colloquial vocabulary)
-    \item Idiomaticity of expressions
-    \item Consistent register maintenance
-    \item Absence of code-mixing or translationese
-\end{itemize}
-
-\textbf{Rating Scale:} 1 (Unnatural, awkward) to 5 (Highly fluent and natural)
-
-\subsection{Evaluation Protocol}
-
-\subsubsection{Test Set Construction}
-A diverse test set of 30 letter generation prompts is curated covering:
-\begin{itemize}
-    \item All nine letter categories (request, application, complaint, invitation, appreciation, recommendation, inquiry, transfer, leave)
-    \item Varying complexity levels (simple single-purpose vs. complex multi-requirement letters)
-    \item Different recipient types (government officials, educational institutions, private organizations)
-    \item Diverse formality requirements (formal vs. very formal contexts)
-\end{itemize}
-
-\subsubsection{Generation Procedure}
-For each test prompt:
-\begin{enumerate}
-    \item Generate letter using the configured LLM directly, without retrieval (control condition)
-    \item Generate letter using the full RAG pipeline with the same LLM (experimental condition)
-    \item Randomize output order to prevent evaluation bias
-    \item Present both outputs to evaluators without revealing which is RAG vs. baseline
-\end{enumerate}
-
-\subsubsection{Expert Evaluation Panel}
-Five expert evaluators are recruited with the following qualifications:
-\begin{itemize}
-    \item Native Sinhala speakers with advanced proficiency in written Sinhala
-    \item Professional experience in formal Sinhala writing (minimum 5 years)
-    \item Diverse backgrounds: educators, government administrators, linguists, professional writers
-    \item No prior knowledge of the research hypotheses to ensure unbiased assessment
-\end{itemize}
-
-\subsubsection{Rating Procedure}
-Each evaluator independently:
-\begin{enumerate}
-    \item Reviews both generated letters for each prompt (baseline and RAG, order randomized)
-    \item Rates each letter on all four metrics using the 5-point scales defined above
-    \item Provides optional qualitative comments explaining ratings
-    \item Completes evaluation without time pressure to ensure careful assessment
-\end{enumerate}
-
-This results in 5 evaluators × 30 prompts × 2 conditions × 4 metrics = 1,200 individual ratings.
-
-\subsection{Statistical Analysis}
-
-To determine whether to reject the null hypothesis (H0), the following statistical tests are applied:
-
-\subsubsection{Primary Analysis: Paired t-test}
-For each metric, a paired t-test compares baseline vs. RAG scores across all test prompts:
-\begin{itemize}
-    \item \textbf{Null hypothesis:} Mean(RAG\_scores) = Mean(Baseline\_scores)
-    \item \textbf{Alternative hypothesis:} Mean(RAG\_scores) > Mean(Baseline\_scores)
-    \item \textbf{Significance level:} α = 0.05
-    \item \textbf{Decision rule:} If p < 0.05 for all four metrics, reject H0
-\end{itemize}
-
-\subsubsection{Inter-Rater Reliability}
-Krippendorff's Alpha is computed to assess agreement among the five evaluators:
-\begin{itemize}
-    \item α > 0.80: High agreement (evaluation protocol is reliable)
-    \item 0.67 < α < 0.80: Moderate agreement (tentative conclusions)
-    \item α < 0.67: Low agreement (evaluation may be unreliable)
-\end{itemize}
-
-\subsubsection{Effect Size Analysis}
-Cohen's d is calculated to quantify the practical significance of RAG improvements:
-\begin{itemize}
-    \item d > 0.8: Large effect (RAG provides substantial improvement)
-    \item 0.5 < d < 0.8: Medium effect (moderate improvement)
-    \item d < 0.5: Small effect (limited practical benefit)
-\end{itemize}
-
-\subsection{Success Criteria}
-
-The alternative hypothesis (H1) is considered supported if:
-\begin{enumerate}
-    \item All four metrics show statistically significant improvement (p < 0.05) for RAG over baseline
-    \item Inter-rater reliability (Krippendorff's Alpha) exceeds 0.67 for at least three metrics
-    \item Effect sizes (Cohen's d) are at least medium (d > 0.5) for the majority of metrics
-\end{enumerate}
-
-If these criteria are met, the research provides empirical evidence that RAG significantly enhances formal Sinhala letter generation, validating the proposed approach for low-resource language tasks.
-
-\section{Evaluation Strategy}
-The evaluation of the generated Sinhala letters follows a two-pronged approach. Firstly, an internal feedback loop embedded in the pipeline allows users to rate the quality of the generated output. Based on this rating, the prompt is either optimized for future use or the letter is accepted and added—after NER processing—to the FAISS index. Secondly, to ensure accuracy and cultural appropriateness, human evaluation is conducted by five experts involved in various aspects of Sinhala writing. Given the limitations of current large language models in handling Sinhala effectively, human judgment is essential for a comprehensive assessment. Additional feedback is also gathered from broader user groups to validate the overall performance of the pipeline.
+Finally, Sinhala formal writing quality involves subjective judgement. Grammar, register, politeness, and cultural appropriateness may be interpreted slightly differently by different evaluators. The number of expert evaluators is also limited by availability. For this reason, the evaluation design uses multiple expert evaluators and inter-rater reliability analysis, as described in the Evaluation chapter.
 
 
 \chapter{Implementation}
@@ -1369,6 +1262,144 @@ letter = chain.invoke({"enhanced_prompt": enhanced_prompt})
 The \texttt{self.llm} object is the generation LLM initialised by the \texttt{LLMFactory} at startup. The chain passes the enhanced prompt directly to the model and returns the raw string output. This simplicity is intentional: because all context structuring and instruction embedding is handled in Step 4, Step 5 requires only a clean LLM invocation. The model-agnostic design means the same generation step works identically with any supported provider.
 
 Following generation, the system returns the letter to the user interface, where the user can rate the output on a 1–5 scale. Letters rated 4 or above are passed through the NER privacy module to remove personal entities, then embedded using LaBSE and added to the live FAISS index. This feedback loop continuously expands the knowledge base with high-quality, user-validated examples, improving the quality of future retrievals over time.
+
+\chapter{Evaluation}
+
+\section{Evaluation Strategy}
+
+The evaluation of the generated Sinhala letters follows a comparative design that directly tests whether the proposed RAG pipeline improves formal Sinhala letter generation compared with a standard LLM baseline. The same underlying LLM is used for both conditions so that the evaluation measures the contribution of retrieval augmentation rather than differences between models. The primary experimental setup uses Google Gemini 2.5 Flash as the configured LLM, while the system design allows the same evaluation to be repeated with other providers such as Ollama-hosted Aya 8B, OpenAI, Azure OpenAI, or HuggingFace models.
+
+\subsection{Justification for Human Evaluation}
+
+Human evaluation is used as the primary assessment method because formal Sinhala letter quality cannot be fully captured through automated text similarity metrics. Metrics such as BLEU, ROUGE, or chrF can measure surface-level overlap with reference texts, but they do not reliably assess whether a generated Sinhala letter uses the correct honorifics, formal written register, cultural conventions, or administrative structure. Since this research focuses on practical letter usability, native Sinhala expert judgement is necessary to evaluate grammatical correctness, structural adherence, contextual relevance, fluency, and politeness.
+
+\section{Hypothesis Testing Framework}
+
+To test the hypotheses stated in Chapter 1, this research employs a comparative evaluation design that directly addresses the claims made in both the null hypothesis (H0) and alternative hypothesis (H1). The testing framework is designed to provide empirical evidence regarding whether RAG significantly improves formal Sinhala letter generation compared to standard LLM prompting.
+
+\subsection{Experimental Design}
+
+The hypothesis testing follows a paired comparative design with two experimental conditions:
+
+\textbf{Baseline Condition (Control):}
+\begin{itemize}
+    \item \textbf{Model:} Google Gemini 2.5 Flash without retrieval augmentation
+    \item \textbf{Input:} The original user prompt is passed directly to the LLM with a simple instruction to write a formal Sinhala letter
+    \item \textbf{Prompt Format:} The prompt contains only the task instruction and the user's letter request
+    \item \textbf{Context:} No retrieved letter examples or structure templates are provided
+    \item \textbf{Purpose:} Represents standard multilingual LLM generation without domain-specific grounding
+\end{itemize}
+
+\textbf{Experimental Condition (RAG):}
+\begin{itemize}
+    \item \textbf{Model:} The same Google Gemini 2.5 Flash model with the full RAG pipeline applied
+    \item \textbf{Input:} The user prompt undergoes information extraction, gap detection, semantic retrieval, reranking, and augmented prompt construction
+    \item \textbf{Prompt Format:} The enhanced prompt contains the original request, extracted metadata, one retrieved structure template, and relevant example letters
+    \item \textbf{Context:} Retrieved Sinhala formal letter examples are included as grounding context
+    \item \textbf{Purpose:} Tests whether retrieved Sinhala examples and structures improve output quality
+\end{itemize}
+
+\subsection{Evaluation Metrics}
+
+The evaluation metrics are aligned with the hypothesis variables to ensure each claim in H0 and H1 can be empirically tested:
+
+\subsubsection{Grammatical Correctness}
+\textbf{Definition:} Absence of grammatical errors including verb conjugation, noun declension, case agreement, honorific appropriateness, and syntactic structure.
+
+\textbf{Rating Scale:} 1 (Multiple critical errors) to 5 (Grammatically flawless)
+
+\subsubsection{Structural Correctness}
+\textbf{Definition:} Adherence to conventional Sinhala formal letter structure including proper sequencing of components such as recipient details, salutation, subject line, body, closing, and signature block.
+
+\textbf{Rating Scale:} 1 (Missing or incorrect structure) to 5 (Perfect structural adherence)
+
+\subsubsection{Contextual Relevance}
+\textbf{Definition:} Appropriateness of content to the specified letter type, recipient, and purpose; semantic coherence with user intent.
+
+\textbf{Rating Scale:} 1 (Irrelevant or incoherent) to 5 (Perfectly contextual)
+
+\subsubsection{Fluency and Naturalness}
+\textbf{Definition:} Natural flow of written Sinhala; absence of awkward phrasing or machine-translation-like constructions; maintenance of formal register (ලිඛිත භාෂාව).
+
+\textbf{Rating Scale:} 1 (Unnatural, awkward) to 5 (Highly fluent and natural)
+
+\section{Evaluation Protocol}
+
+\subsection{Test Set Construction}
+A diverse test set of 30 letter generation prompts is curated covering:
+\begin{itemize}
+    \item all nine letter categories considered in this research: request, application, complaint, invitation, appreciation, recommendation, inquiry, transfer, and leave,
+    \item varying complexity levels, from simple single-purpose prompts to complex multi-requirement letters,
+    \item different recipient types, including government officials, educational institutions, and private organizations, and
+    \item diverse formality requirements, including formal and very formal contexts.
+\end{itemize}
+
+\subsection{Generation Procedure}
+For each test prompt:
+\begin{enumerate}
+    \item Generate a baseline letter using the configured LLM directly, without retrieval.
+    \item Generate a RAG-based letter using the full proposed pipeline.
+    \item Randomize output order to prevent evaluation bias.
+    \item Present both outputs to evaluators without revealing which is RAG and which is baseline.
+\end{enumerate}
+
+\subsection{Expert Evaluation Panel}
+Five expert evaluators are recruited with the following qualifications:
+\begin{itemize}
+    \item native Sinhala speakers with advanced proficiency in written Sinhala,
+    \item professional experience in formal Sinhala writing,
+    \item diverse backgrounds such as education, public administration, linguistics, or professional writing, and
+    \item no prior knowledge of the research hypotheses during rating.
+\end{itemize}
+
+\subsection{Rating Procedure}
+Each evaluator independently:
+\begin{enumerate}
+    \item reviews both generated letters for each prompt,
+    \item rates each letter on all four metrics using the 5-point scales defined above,
+    \item provides optional qualitative comments explaining the ratings, and
+    \item completes the evaluation without knowing the generation condition.
+\end{enumerate}
+
+This results in 5 evaluators × 30 prompts × 2 conditions × 4 metrics = 1,200 individual ratings.
+
+\section{Statistical Analysis}
+
+To determine whether to reject the null hypothesis (H0), the following statistical tests are applied:
+
+\subsection{Primary Analysis: Paired t-test}
+For each metric, a paired t-test compares baseline and RAG scores across the same test prompts:
+\begin{itemize}
+    \item \textbf{Null hypothesis:} Mean(RAG\_scores) = Mean(Baseline\_scores)
+    \item \textbf{Alternative hypothesis:} Mean(RAG\_scores) > Mean(Baseline\_scores)
+    \item \textbf{Significance level:} α = 0.05
+    \item \textbf{Decision rule:} If p < 0.05 for the primary quality metrics, reject H0
+\end{itemize}
+
+\subsection{Inter-Rater Reliability}
+Krippendorff's Alpha is computed to assess agreement among the five evaluators:
+\begin{itemize}
+    \item α > 0.80: High agreement
+    \item 0.67 < α < 0.80: Moderate agreement
+    \item α < 0.67: Low agreement
+\end{itemize}
+
+\subsection{Effect Size Analysis}
+Cohen's d is calculated to quantify the practical significance of RAG improvements:
+\begin{itemize}
+    \item d > 0.8: Large effect
+    \item 0.5 < d < 0.8: Medium effect
+    \item d < 0.5: Small effect
+\end{itemize}
+
+\section{Success Criteria}
+
+The alternative hypothesis (H1) is considered supported if:
+\begin{enumerate}
+    \item RAG outputs show statistically significant improvement over baseline outputs for the primary evaluation metrics,
+    \item inter-rater reliability exceeds 0.67 for the majority of metrics, and
+    \item effect sizes are at least medium for the majority of metrics.
+\end{enumerate}
 
 \begin{references}
     \bibliography{references} % argument is your bibliography database(s)
