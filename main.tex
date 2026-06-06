@@ -42,6 +42,9 @@
 \usepackage{cmap}
 \pagestyle{plain}
 \usepackage{graphicx}
+\newcommand{\uiscreenshot}[3][0.9\linewidth]{%
+\IfFileExists{#2}{\includegraphics[width=#1,keepaspectratio]{#2}}{%
+\fbox{\parbox{0.85\linewidth}{\centering\vspace{1.8cm}#3\vspace{1.8cm}}}}}
 \usepackage{amsmath}
 \usepackage{tabularx}
 \usepackage{booktabs}
@@ -824,58 +827,213 @@ Finally, Sinhala formal writing quality involves subjective judgement. Grammar, 
 
 \section{Introduction}
 
-This part of the thesis focus on the implementation of the full pipeline from passing the user prompt into the system until the letter generation.
+This chapter describes the implementation of the proposed Sinhala formal letter generation system. The implemented artifact consists of a React-based user interface, a FastAPI backend, a modular RAG pipeline, a FAISS-based Sinhala letter knowledge base, a plug-and-play LLM factory, and feedback mechanisms for improving the knowledge base over time.
 
-This pipeline consists of 5 different parts.
+The implementation separates the user-facing workflow from the core NLP pipeline. The frontend is responsible for authentication, prompt entry, missing-information collection, generated-letter display, and feedback submission. The backend is responsible for user management, pipeline orchestration, knowledge-base access, LLM invocation, and administrative reporting. This separation allows the system to be used as a web application while keeping the RAG pipeline reusable for research experiments.
+
+\section{System Architecture}
+
+The system is implemented as a layered architecture. The frontend sends user requests to the FastAPI backend, which initializes and manages the RAG pipeline. The pipeline then coordinates information extraction, gap detection, retrieval, prompt construction, generation, and feedback-based knowledge-base updates. The major implementation components are shown in Table \ref{tab:implementation_components}.
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}p{4.2cm}Xp{4.1cm}@{}}
+\toprule
+\textbf{Component} & \textbf{Responsibility} & \textbf{Main Files} \\
+\midrule
+React frontend & Provides the user interface for authentication, prompt entry, clarification forms, generated letter display, ratings, and admin views & \texttt{ui/src/App.js}, \texttt{ui/src/LetterChat.js}, \texttt{ui/src/Admin.js}, UI components \\
+\addlinespace
+FastAPI backend & Exposes REST endpoints, initializes the pipeline, handles authentication, feedback, knowledge-base management, and admin exports & \texttt{rag/api.py}, \texttt{rag/auth.py} \\
+\addlinespace
+Pipeline orchestrator & Coordinates extraction, gap detection, retrieval, prompt building, and generation & \texttt{rag/pipeline.py} \\
+\addlinespace
+Information extraction & Extracts structured fields from Sinhala, Singlish, or mixed prompts using XLM-RoBERTa NER and LLM-based backup extraction & \texttt{rag/steps/extractor.py}, \texttt{rag/models/sinhala\_ner.py} \\
+\addlinespace
+Gap filling & Detects missing fields and generates Sinhala clarification questions & \texttt{rag/steps/gap\_filler.py} \\
+\addlinespace
+Retrieval and reranking & Builds Sinhala-aware search queries, retrieves structure/templates/examples, and reranks candidates & \texttt{rag/steps/retriever.py}, \texttt{rag/query\_builder.py}, \texttt{rag/reranker.py} \\
+\addlinespace
+Prompt construction and generation & Constructs the enhanced prompt and invokes the configured LLM & \texttt{rag/steps/prompt\_builder.py}, \texttt{rag/steps/generator.py} \\
+\addlinespace
+Knowledge base and LLM factory & Loads the CSV corpus, creates FAISS indexes, manages embeddings, and provides provider-agnostic LLM objects & \texttt{rag/knowledge\_base/letter\_database.py}, \texttt{rag/knowledge\_base/llm\_factory.py}, \texttt{rag/config.py} \\
+\bottomrule
+\end{tabularx}
+\caption{Implementation components and their responsibilities}
+\label{tab:implementation_components}
+\end{table}
 
 \section{User Interface}
 
-Simple user interface to pass the prompts and interact with the system (chat model) to improve the prompt and display the generated Letter. Also a rating system is included for the user to rate the generated letters.
+The user interface is implemented as a React application. Its main purpose is to make the RAG pipeline usable by non-technical users who need to generate formal Sinhala letters without manually preparing structured prompts. The interface follows a chat-oriented workflow where users enter their letter request in Sinhala, Singlish, or mixed Sinhala-English text. The system then either asks for missing details or proceeds to generate the final letter.
 
-<add a set of UI images with descriptions>
+\subsection{Authentication and User Profile}
+
+The application begins with a login and registration flow. The login interface authenticates an existing user before access is given to the letter generation workspace, as shown in Figure \ref{fig:ui_login}. New users can create an account through the registration interface shown in Figure \ref{fig:ui_register}. During registration, users provide account credentials and optional profile details such as name, title, address, and contact information. These profile details can be reused during letter generation so that the final letter contains an appropriate sender block without requiring the user to type the same details repeatedly.
+
+\begin{figure}[htbp]
+\centering
+\uiscreenshot[0.9\linewidth]{images/ui_login.png}{Add screenshot of the login interface here.}
+\caption{Login interface}
+\label{fig:ui_login}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\uiscreenshot[0.9\linewidth]{images/ui_register.png}{Add screenshot of the registration interface here.}
+\caption{Registration interface with profile fields}
+\label{fig:ui_register}
+\end{figure}
+
+\subsection{Letter Request Interface}
+
+After authentication, users are presented with the main letter request interface shown in Figure \ref{fig:ui_prompt_input}. The interface is designed as a chat-style workspace where the user can enter a natural Sinhala, Singlish, or mixed-language prompt. The initial prompt may describe a leave letter, complaint, invitation, application, request, appeal, resignation, notice, or appreciation letter. The prompt is sent to the backend through the \texttt{/process\_query/} endpoint, where the information extraction and missing-field detection stages are executed.
+
+\begin{figure}[htbp]
+\centering
+\uiscreenshot[0.95\linewidth]{images/ui_prompt_input.png}{Add screenshot of the main prompt entry interface here.}
+\caption{Main letter request interface}
+\label{fig:ui_prompt_input}
+\end{figure}
+
+\subsection{Missing Information Collection}
+
+If the backend determines that mandatory information is missing, the frontend displays a structured form containing the Sinhala clarification questions generated by the gap-filling module, as shown in Figure \ref{fig:ui_missing_questions}. This avoids forcing the user to rewrite the whole prompt. Instead, the user can provide only the missing details, such as recipient, sender, event date, event time, venue, or supporting information. The submitted answers are merged with the extracted information and passed back into the pipeline before retrieval and generation.
+
+\begin{figure}[htbp]
+\centering
+\uiscreenshot[0.95\linewidth]{images/ui_missing_questions.png}{Add screenshot of missing-information questions here.}
+\caption{Missing information question form}
+\label{fig:ui_missing_questions}
+\end{figure}
+
+\subsection{Generated Letter Display and Rating}
+
+Once all required information is available, the frontend calls the letter generation endpoint and displays the generated Sinhala formal letter. The generated text is shown in a dedicated letter display component so that the user can read the full output before taking any further action. Figure \ref{fig:ui_letter_editing} shows the generated letter editing view, where the user can inspect, edit, download, or finalize the letter.
+
+\begin{figure}[htbp]
+\centering
+\uiscreenshot[0.75\linewidth]{images/ui_letter_editing.png}{Add screenshot of generated letter editing view here.}
+\caption{Generated letter editing view}
+\label{fig:ui_letter_editing}
+\end{figure}
+
+After reviewing the generated letter, the user can submit structured feedback using the rating form shown in Figure \ref{fig:ui_letter_feedback}. The rating form captures multiple quality dimensions, including overall quality, how well the letter matches the request, language quality, structure, and optional written comments. These ratings are submitted to the backend for storage and future analysis.
+
+\begin{figure}[htbp]
+\centering
+\uiscreenshot[0.72\linewidth]{images/ui_letter_feedback.png}{Add screenshot of generated-letter feedback form here.}
+\caption{Generated letter feedback form}
+\label{fig:ui_letter_feedback}
+\end{figure}
+
+In addition to rating a generated letter, users can provide broader system feedback through the modal interface shown in Figure \ref{fig:ui_system_feedback}. This form records usability-oriented feedback, such as whether the system was easy to use, whether the letter request was easy to describe, whether the gap questions were helpful, whether the user trusted the generated result, and whether the user would use the system again.
+
+\begin{figure}[htbp]
+\centering
+\uiscreenshot[0.72\linewidth]{images/ui_system_feedback.png}{Add screenshot of system feedback form here.}
+\caption{System feedback form}
+\label{fig:ui_system_feedback}
+\end{figure}
+
+\subsection{Admin Dashboard}
+
+An administrative dashboard is implemented to inspect user ratings and system feedback. The overview tab, shown in Figure \ref{fig:ui_admin_dashboard}, summarises the number of registered users, total letter ratings, average letter quality scores, and system feedback aggregates. This gives the administrator a compact view of system use and feedback trends.
+
+\begin{figure}[htbp]
+\centering
+\uiscreenshot[0.98\linewidth]{images/ui_admin_dashboard.png}{Add screenshot of admin dashboard overview here.}
+\caption{Administrative dashboard overview}
+\label{fig:ui_admin_dashboard}
+\end{figure}
+
+The letter ratings tab, shown in Figure \ref{fig:ui_admin_letter_ratings}, allows the administrator to inspect individual letter-rating records, including the user, category, numerical ratings, comments, and original prompt. The system feedback tab, shown in Figure \ref{fig:ui_admin_system_feedback}, provides access to broader usability feedback and supports CSV export for later analysis.
+
+\begin{figure}[htbp]
+\centering
+\uiscreenshot[0.98\linewidth]{images/ui_admin_letter_ratings.png}{Add screenshot of admin letter ratings panel here.}
+\caption{Administrative letter ratings panel}
+\label{fig:ui_admin_letter_ratings}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\uiscreenshot[0.98\linewidth]{images/ui_admin_system_feedback.png}{Add screenshot of admin system feedback panel here.}
+\caption{Administrative system feedback panel}
+\label{fig:ui_admin_system_feedback}
+\end{figure}
 
 \section{Backend API}
-Consists of REST APIs to interact with the pipeline
+
+The backend is implemented using FastAPI. On startup, the backend loads the active configuration, initializes the embedding model, loads or builds the FAISS knowledge base, creates the extraction and generation LLM objects through the LLM factory, and constructs the pipeline object. The API layer also provides authentication, feedback storage, knowledge-base management, diagnostics, and admin export endpoints.
+
+Authentication is used to associate generated letters and feedback with registered users. The backend maintains user and feedback records in a local database, while the letter knowledge base is stored separately as a CSV-backed FAISS index.
 
 \subsection{Endpoints}
-Consists of REST APIs to interact with the pipeline. Table 4.1 shows the endpoints with a description of how the backend APIs behave. More details on this are on the API spec on GitHub repository \cite{29}.
+Table \ref{tab:api_endpoints} lists the major API endpoints used by the system. More details on the implementation are available in the project repository \cite{29}.
 
 
 \begin{table}[h!]
 \centering
-\begin{tabular}{@{}p{4.5cm}p{11.5cm}@{}}
+\small
+\begin{tabularx}{\linewidth}{@{}p{4.8cm}X@{}}
 \toprule
 \textbf{Endpoint} & \textbf{Description} \\
 \midrule
+\texttt{POST /auth/register} &
+Creates a new user account and stores profile details used during letter generation. \\
+\midrule
+\texttt{POST /auth/login} &
+Authenticates a registered user and returns an access token. \\
+\midrule
+\texttt{GET /auth/me} and \texttt{PUT /auth/me} &
+Retrieves or updates the logged-in user's profile details. \\
+\midrule
 \texttt{POST /extract/} &
-Step 1 only: accepts a user prompt and returns structured extracted metadata (letter type, recipient, sender, subject, purpose, details). \\
+Runs Step 1 only. Accepts a user prompt and returns structured extracted metadata such as letter type, recipient, sender, subject, purpose, details, and event fields. \\
 \midrule
 \texttt{POST /process\_query/} &
 Runs Steps 1–4 of the pipeline: extracts information, detects missing fields, retrieves relevant documents from the FAISS knowledge base, and builds an enhanced prompt. Returns either the enhanced prompt (if all required fields are present) or a set of Sinhala clarifying questions (if fields are missing). \\
 \midrule
 \texttt{POST /generate\_letter/} &
-Step 5: accepts an enhanced prompt produced by \texttt{/process\_query/} and generates the final Sinhala formal letter using the configured LLM. \\
+Runs Step 5. Accepts an enhanced prompt produced by \texttt{/process\_query/}, optionally includes sender profile details, and generates the final Sinhala formal letter using the configured LLM. \\
 \midrule
-\texttt{POST /search/} &
+\texttt{POST /feedback/letter/} &
+Stores structured user ratings for a generated letter. Letters rated 4 or above are anonymized and added to the live FAISS index as user-generated examples. \\
+\midrule
+\texttt{POST /feedback/system/} &
+Stores broader system feedback such as whether the generated letter was useful and whether clarification questions were helpful. \\
+\midrule
+\texttt{GET /search/} &
 Searches the FAISS index directly, returning the top-K most relevant documents for a given query embedding. Useful for inspecting retrieval behaviour. \\
+\midrule
+\texttt{POST /add\_to\_knowledge\_base/} &
+Adds a new document entry to the source knowledge-base CSV. A rebuild is required before the new entry is included in vector search. \\
 \midrule
 \texttt{POST /rebuild\_knowledge\_base/} &
 Rebuilds the entire FAISS knowledge base from the source data CSV. Used when the corpus has been updated. \\
 \midrule
-\texttt{POST /rate\_letter/} &
-Accepts a user rating (1–5 stars) for a generated letter. Letters rated 4 or above are anonymised and added to the live FAISS index, enabling continuous knowledge base improvement. \\
+\texttt{GET /config/} &
+Returns the active retrieval, embedding, vector-store, and LLM configuration. \\
 \midrule
 \texttt{GET /diagnostics/} &
 Returns a diagnostic report of the RAG pipeline, including document count, embedding model, sample retrieval results, and data source validation status. \\
+\midrule
+\texttt{/admin/*} &
+Provides administrator login, aggregate feedback statistics, letter-rating records, system-feedback records, and CSV export endpoints. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \caption{Descriptions of API Endpoints in the RAG Pipeline}
 \label{tab:api_endpoints}
 \end{table}
 
+\subsection{Request Flow}
+
+The normal user request flow consists of three backend calls. First, the frontend submits the user's prompt to \texttt{/process\_query/}. If required fields are missing, the backend returns Sinhala clarification questions and the frontend displays them in the missing-information form. Once the user provides the missing values, the same endpoint is called again with the additional information. When the response status is complete, the frontend sends the enhanced prompt to \texttt{/generate\_letter/}. After the generated letter is displayed, the user's rating is submitted through \texttt{/feedback/letter/}.
+
 \subsection{Information Extraction Methods}
 
-Information extraction is a critical component of the letter generation pipeline, responsible for parsing user prompts (often informal Sinhala text) into structured fields such as letter type, recipient, subject, and purpose. This research implements and evaluates two distinct extraction approaches: (1) a fine-tuned Named Entity Recognition (NER) model using transformer architectures, and (2) an LLM-based extraction using schema-first prompting through the plug-and-play LLM factory described in Section 3.4.
+Information extraction is a critical component of the letter generation pipeline, responsible for parsing user prompts (often informal Sinhala text) into structured fields such as letter type, recipient, subject, and purpose. This research implements and evaluates two distinct extraction approaches: (1) a fine-tuned Named Entity Recognition (NER) model using transformer architectures, and (2) LLM-based extraction using schema-first prompting through the plug-and-play LLM factory described in the Methodology chapter.
 
 \subsubsection{NER-Based Extraction}
 
@@ -888,7 +1046,7 @@ A Named Entity Recognition model was fine-tuned using XLM-RoBERTa-base (multilin
 The training dataset was curated from 150 official Sinhala letters using a semi-automated pattern-based approach:
 
 \begin{enumerate}
-    \item \textbf{Pattern Extraction:} Common phrases and structural patterns were identified from the letter corpus (Figure \ref{fig:4.4})
+    \item \textbf{Pattern Extraction:} Common phrases and structural patterns were identified from the letter corpus (Figure \ref{fig:impl_ner_patterns})
     \item \textbf{Entity Annotation:} Manual labeling of entity spans for each letter component
     \item \textbf{Data Structuring:} Conversion to token-level BIO (Begin-Inside-Outside) format
 \end{enumerate}
@@ -897,7 +1055,7 @@ The training dataset was curated from 150 official Sinhala letters using a semi-
     \centering
     \includegraphics[width=1\linewidth]{images/letter_patterns.png}
     \caption{Letter structuring patterns used for NER training data preparation}
-    \label{fig:4.4}
+    \label{fig:impl_ner_patterns}
 \end{figure}
 
 \textbf{Entity Schema:}
@@ -906,12 +1064,15 @@ The NER model was trained to recognize six entity types critical for letter gene
 
 \begin{SinhalaVerbatim}
 Entity Types:
-- LETTER_TYPE: Letter category (application/request/complaint)
+- LETTER_TYPE: Letter category
 - RECIPIENT: Intended recipient (e.g., කළමනාකරු, අධ්‍යක්ෂ)
 - SENDER: Letter sender name
 - SUBJECT: Subject line or main topic
 - PURPOSE: Primary intent or reason for writing
-- DATE: Time-related information (deadlines, dates)
+- DETAILS: Supporting information
+- EVENT_DATE: Event date for invitation or event-based letters
+- EVENT_TIME: Event time for invitation or event-based letters
+- EVENT_VENUE: Event venue for invitation or event-based letters
 \end{SinhalaVerbatim}
 
 \textbf{Training Configuration:}
@@ -942,22 +1103,25 @@ Raw NER outputs undergo structured conversion:
 
 \textbf{Schema-First Prompting Architecture}
 
-The LLM-based extraction leverages the instruction-following capabilities of the configured LLM through schema-first prompting. This approach does not require training data or model fine-tuning—instead, it provides the model with an explicit JSON schema definition that guides the extraction process. Because extraction is handled through the LLM factory (see Section 3.4), any supported provider can serve as the extraction model without changes to the extraction logic.
+The LLM-based extraction leverages the instruction-following capabilities of the configured LLM through schema-first prompting. This approach does not require training data or model fine-tuning—instead, it provides the model with an explicit JSON schema definition that guides the extraction process. Because extraction is handled through the LLM factory, any supported provider can serve as the extraction model without changes to the extraction logic.
 
 \textbf{Extraction Schema Definition:}
 
 \begin{SinhalaVerbatim}
 {
-    "letter_type": "ලිපි වර්ගය (application/request/complaint)",
+    "letter_type": "ලිපි වර්ගය",
     "recipient": "ලිපිය ලබන්නා",
     "sender": "ලිපිය යවන්නා",
     "subject": "ලිපියේ විෂයය",
     "purpose": "ලිපියේ අරමුණ",
-    "key_details": ["වැදගත් තොරතුරු ලැයිස්තුව"]
+    "details": "වැදගත් අමතර තොරතුරු",
+    "event_date": "ආරාධනා ලිපියක් නම් අවස්ථාවේ දිනය",
+    "event_time": "ආරාධනා ලිපියක් නම් අවස්ථාවේ වේලාව",
+    "event_venue": "ආරාධනා ලිපියක් නම් අවස්ථාවේ ස්ථානය"
 }
 \end{SinhalaVerbatim}
 
-The schema includes inline descriptions in Sinhala for each field, serving as implicit instructions to the model. For example, the field \texttt{letter\_type} includes the Sinhala description and expected categories (application/request/complaint) directly in the schema value.
+The schema includes inline descriptions in Sinhala for each field, serving as implicit instructions to the model. The \texttt{letter\_type} field is used to classify the prompt into one of the formal letter categories considered in this research, such as request, application, complaint, invitation, appreciation, recommendation, inquiry, transfer, and leave. For invitation letters, the event-specific fields are populated separately so that the generated letter contains the correct date, time, and venue.
 
 \textbf{Prompt Construction:}
 
@@ -968,12 +1132,15 @@ The schema-first prompt combines structured instructions and the user's input:
 
 පහත JSON ආකෘතිය භාවිතා කරන්න:
 {
-    "letter_type": "ලිපි වර්ගය (application/request/complaint)",
+    "letter_type": "ලිපි වර්ගය",
     "recipient": "ලිපිය ලබන්නා",
     "sender": "ලිපිය යවන්නා",
     "subject": "ලිපියේ විෂයය",
     "purpose": "ලිපිය ලියන අරමුණ",
-    "key_details": ["වැදගත් තොරතුරු ලැයිස්තුව"]
+    "details": "වැදගත් අමතර තොරතුරු",
+    "event_date": "ආරාධනා ලිපියක් නම් අවස්ථාවේ දිනය",
+    "event_time": "ආරාධනා ලිපියක් නම් අවස්ථාවේ වේලාව",
+    "event_venue": "ආරාධනා ලිපියක් නම් අවස්ථාවේ ස්ථානය"
 }
 
 දැන් මෙම ඉල්ලීම විශ්ලේෂණය කරන්න:
@@ -1030,88 +1197,13 @@ def _extract_with_llm(self, text: str) -> dict:
 
 The \texttt{self.llm} object is initialised by the \texttt{LLMFactory} at startup and is fully interchangeable. Rate-limit errors (HTTP 429) from API-based providers are handled automatically with exponential backoff (up to 4 retries, base delay 5 seconds).
 
-\subsubsection{Comparative Evaluation of Extraction Methods}
+\subsubsection{Hybrid Extraction Strategy}
 
-\textbf{Evaluation Methodology}
-
-Both extraction methods were evaluated on a held-out test set of 30 Sinhala prompts representing diverse letter types and linguistic complexity. The evaluation metrics include:
-
-\begin{itemize}
-    \item \textbf{Field Accuracy:} Percentage of correctly extracted fields per prompt
-    \item \textbf{Complete Extraction Rate:} Percentage of prompts with all required fields correctly extracted
-    \item \textbf{Semantic Correctness:} Manual evaluation of whether extracted intent matches user prompt
-    \item \textbf{Inference Latency:} Average time to extract information per prompt
-\end{itemize}
-
-\textbf{Quantitative Results}
-
-\begin{table}[h]
-\centering
-\begin{tabular}{|l|c|c|}
-\hline
-\textbf{Metric} & \textbf{NER-Based} & \textbf{LLM-Based} \\ \hline
-Field Accuracy & 82\% & 89\% \\ \hline
-Complete Extraction Rate & 67\% & 77\% \\ \hline
-Semantic Correctness & 85\% & 91\% \\ \hline
-Avg. Inference Latency & 0.12s & 0.85s \\ \hline
-Training Required & Yes (5 epochs) & No (zero-shot) \\ \hline
-\end{tabular}
-\caption{Comparative performance of NER vs LLM-based extraction methods}
-\label{table:extraction_comparison}
-\end{table}
-
-\textbf{Qualitative Analysis}
-
-\textbf{NER Strengths:}
-\begin{itemize}
-    \item \textbf{Speed:} 7× faster inference (0.12s vs 0.85s)
-    \item \textbf{Deterministic:} Consistent outputs for identical inputs
-    \item \textbf{Resource Efficient:} Lower memory footprint (1.1GB vs 4.8GB)
-    \item \textbf{Offline Capable:} No dependency on external LLM APIs
-\end{itemize}
-
-\textbf{NER Limitations:}
-\begin{itemize}
-    \item \textbf{Rigid Boundaries:} Struggles with overlapping or ambiguous entity spans
-    \item \textbf{Training Dependency:} Requires labeled data and retraining for schema changes
-    \item \textbf{Context Weakness:} Cannot infer implicit information (e.g., recipient from letter type)
-    \item \textbf{Out-of-Vocabulary:} Poor performance on unseen phrases or creative language
-\end{itemize}
-
-\textbf{LLM Strengths:}
-\begin{itemize}
-    \item \textbf{Contextual Understanding:} Infers missing fields from context (e.g., subject from purpose)
-    \item \textbf{Flexible Extraction:} Adapts to varied phrasing and informal language
-    \item \textbf{Zero Training:} No labeled data or fine-tuning required
-    \item \textbf{Semantic Reasoning:} Can disambiguate complex or nested intents
-\end{itemize}
-
-\textbf{LLM Limitations:}
-\begin{itemize}
-    \item \textbf{Latency:} 7× slower than NER approach
-    \item \textbf{Stochastic:} Minor output variations across runs (temperature > 0)
-    \item \textbf{Resource Requirements:} For locally hosted models (e.g., via Ollama), significant GPU memory is required; API-based providers (e.g., Gemini) eliminate this constraint but introduce network dependency
-    \item \textbf{Dependency:} Relies on availability of the configured LLM provider
-\end{itemize}
-
-\textbf{Implementation Decision}
-
-For this research, the \textbf{LLM-based extraction} was selected as the primary method based on:
-
-\begin{enumerate}
-    \item \textbf{Superior Accuracy:} 7\% higher field accuracy and 10\% higher complete extraction rate
-    \item \textbf{No Training Bottleneck:} Eliminates need for extensive annotation effort (150+ samples)
-    \item \textbf{Adaptability:} Schema changes require only schema modification, not model retraining or example curation
-    \item \textbf{Research Focus:} Aligns with objective of evaluating multilingual LLM capabilities on low-resource tasks
-    \item \textbf{Prompt Efficiency:} Schema-first approach reduces token count compared to few-shot examples
-    \item \textbf{Provider Flexibility:} Because the extraction step uses the plug-and-play LLM factory, the best available model can be used for extraction at any point without restructuring the pipeline
-\end{enumerate}
-
-The 0.73s latency difference (0.85s vs 0.12s) was deemed acceptable for a research prototype where generation quality outweighs real-time performance constraints. For production deployment with high-throughput requirements, the NER approach or a hybrid solution (NER for simple prompts, LLM for complex cases) would be preferable.
+The implemented extraction layer supports both NER-based and LLM-based extraction. The NER model provides fast structured extraction where entity spans can be identified directly. The LLM-based extractor provides a backup strategy for informal prompts, implicit requests, mixed-script input, or prompts where required fields are not explicitly stated. This hybrid design allows the system to combine deterministic extraction with contextual reasoning.
 
 \subsection{Named Entity Recognition for Data Privacy}
 
-The Named Entity Recognition (NER) module for data privacy serves a distinct purpose from the extraction NER discussed in Section 4.2.1. While extraction NER identifies entities in user prompts, the privacy NER preprocesses the letter corpus by removing personal identifiers before embedding into the FAISS vector store.
+The Named Entity Recognition (NER) module for data privacy serves a distinct purpose from the extraction NER discussed earlier in this chapter. While extraction NER identifies entities in user prompts, the privacy NER preprocesses the letter corpus by removing personal identifiers before embedding into the FAISS vector store.
 
 \subsubsection{Purpose and Motivation}
 
@@ -1200,28 +1292,33 @@ Testing showed that entity anonymization improved generalization:
 This demonstrates the value of entity removal for creating generalizable letter templates that adapt to user-specific contexts during generation.
 
 \section{Index Creation}
-The FAISS (Facebook AI Similarity Search) indexing library was selected as the foundation for the vector store in the Sinhala letter generation pipeline due to its proven efficiency and scalability for high-dimensional similarity search. In this system, the core challenge lies in retrieving semantically similar letter segments—such as requests, apologies, and invitations—based on natural-language prompts. These letter bodies are preprocessed, stripped of named entities, and embedded as dense vectors. FAISS is particularly suited for this scenario because it supports fast and approximate nearest neighbor (ANN) search with high precision, even in large-scale datasets.
+Index creation is implemented in the \texttt{LetterDatabase} class. This class is responsible for loading the source CSV file, converting each row into a LangChain document, attaching metadata, splitting long documents into chunks, embedding the chunks, and persisting the FAISS index locally.
 
-FAISS offers a combination of speed and accuracy that fits well within retrieval-augmented generation (RAG) architectures. When users enter prompts, the system must retrieve relevant content nearly instantly for seamless LLM generation. FAISS handles this efficiently by using indexing techniques such as product quantization, inverted file systems, and flat or hierarchical clustering. This performance characteristic ensures that users receive contextually appropriate and structurally coherent letters in real time. The implementation for creating the vector store is both flexible and modular. A function is used to initialize and persist the FAISS index. It begins by validating whether documents are present for vectorization. If the FAISS option is selected (as it is by default), the function uses the from documents method to create an index from the embedded documents using the chosen embedding model. A storage directory (faiss index) is automatically created if it doesn’t exist, and the vector store is saved locally for reuse.
-
-The design also supports Chroma as an optional alternative, complete with error handling and permission checks. However, FAISS remains the preferred backend due to its speed and effectiveness in large-scale embedding retrieval.
-
-This FAISS-powered vector store becomes the semantic memory of the system—enabling high-quality, context-driven responses through the RAG pipeline and ensuring scalability as more letters are added over time.
+The implementation follows these functions:
+\begin{itemize}
+    \item \texttt{load\_data()} loads the active Sinhala letter CSV file.
+    \item \texttt{create\_documents()} converts each CSV row into a document containing the title, content, and metadata.
+    \item \texttt{split\_documents()} applies text splitting so that each indexed unit remains within a manageable size.
+    \item \texttt{build\_knowledge\_base()} builds or loads the persisted FAISS index.
+    \item \texttt{rebuild\_knowledge\_base()} forces regeneration of the FAISS index when the corpus changes.
+    \item \texttt{search()} and \texttt{search\_filtered()} expose direct and metadata-filtered retrieval operations.
+    \item \texttt{add\_document()} adds high-quality user-generated letters to the live FAISS index.
+\end{itemize}
 
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{images/index_db_creation.png}
     \caption{Index creation code}
-    \label{fig:4.4}
+    \label{fig:impl_index_creation}
 \end{figure}
 
 \section{RAG Pipeline}
 
-The RAG pipeline is implemented as a modular, five-step orchestration managed by a central \texttt{Pipeline} class. The pipeline exposes a two-part interface to the FastAPI layer: \texttt{process()}, which runs Steps 1–4 and returns either an enhanced prompt or a set of clarifying questions, and \texttt{generate\_letter()}, which runs Step 5 to produce the final letter.
+The RAG pipeline is implemented as a modular orchestration managed by a central \texttt{Pipeline} class. The pipeline exposes a two-part interface to the FastAPI layer: \texttt{process()}, which runs Steps 1–4 and returns either an enhanced prompt or a set of clarifying questions, and \texttt{generate\_letter()}, which runs the generation step. A sixth post-generation step is handled through the feedback flow, where high-rated generated letters are anonymized and added back to the knowledge base.
 
 \subsection{Step 1: Information Extraction}
 
-The first step parses the user's informal Sinhala prompt into a structured metadata object. As described in Section 4.2, this is implemented using LLM-based schema-first prompting through the plug-and-play LLM factory. The extracted fields—letter type, recipient, sender, subject, purpose, details, and optional event fields (date, time, venue)—are passed to the next step for validation.
+The first step parses the user's informal Sinhala prompt into a structured metadata object. As described earlier, this is implemented using transformer-based NER with LLM-based schema-first extraction as a backup strategy. The extracted fields—letter type, recipient, sender, subject, purpose, details, and optional event fields (date, time, venue)—are passed to the next step for validation.
 
 \subsection{Step 2: Gap Detection}
 
@@ -1251,7 +1348,11 @@ This enhanced prompt is returned to the API layer, which then calls the \texttt{
 
 \section{Letter Generation Pipeline}
 
-Step 5 implements letter generation as a minimal LangChain chain:
+The letter generation pipeline contains Step 5 and Step 6 of the implemented workflow.
+
+\subsection{Step 5: LLM-Based Letter Generation}
+
+Step 5 implements letter generation as a LangChain chain:
 
 \begin{verbatim}
 prompt_template = ChatPromptTemplate.from_template("{enhanced_prompt}")
@@ -1259,9 +1360,25 @@ chain = prompt_template | self.llm | StrOutputParser()
 letter = chain.invoke({"enhanced_prompt": enhanced_prompt})
 \end{verbatim}
 
-The \texttt{self.llm} object is the generation LLM initialised by the \texttt{LLMFactory} at startup. The chain passes the enhanced prompt directly to the model and returns the raw string output. This simplicity is intentional: because all context structuring and instruction embedding is handled in Step 4, Step 5 requires only a clean LLM invocation. The model-agnostic design means the same generation step works identically with any supported provider.
+The \texttt{self.llm} object is the generation LLM initialised by the \texttt{LLMFactory} at startup. The chain passes the enhanced prompt directly to the model and returns the raw string output. Because all context structuring and instruction embedding is handled in Step 4, Step 5 requires only a clean LLM invocation. The model-agnostic design means the same generation step works identically with any supported provider.
 
-Following generation, the system returns the letter to the user interface, where the user can rate the output on a 1–5 scale. Letters rated 4 or above are passed through the NER privacy module to remove personal entities, then embedded using LaBSE and added to the live FAISS index. This feedback loop continuously expands the knowledge base with high-quality, user-validated examples, improving the quality of future retrievals over time.
+The generation step can also receive sender profile information from the frontend. When sender information is available, the generator appends it to the enhanced prompt so that the final letter can include the user's name, title, address, phone number, and other sender details.
+
+\subsection{Step 6: Feedback and Knowledge-Base Update}
+
+Following generation, the system returns the letter to the user interface, where the user can rate the output on a 1–5 scale across multiple quality dimensions. Letters rated 4 or above are passed through the NER privacy module to remove personal entities, then embedded using LaBSE and added to the live FAISS index. This feedback loop continuously expands the knowledge base with high-quality, user-validated examples, improving the quality of future retrievals over time.
+
+\section{Configuration}
+
+The implementation uses a centralized configuration module to control retrieval, embedding, LLM, vector-store, and NER behavior. The active data file, FAISS index path, embedding model, reranker flag, and LLM providers are all defined through configuration. This allows experiments to switch between baseline, Sinhala-query-enhanced, and full-pipeline configurations without rewriting the pipeline code.
+
+The default generation and extraction providers can be configured separately. For example, Gemini can be used for extraction while a locally hosted Aya 8B model can be used for generation. The same factory interface is used regardless of provider, making the pipeline reusable across cloud and local deployment environments.
+
+\section{Feedback and Administration}
+
+The feedback system records structured per-letter ratings and broader system feedback. Per-letter feedback captures quality dimensions such as overall quality, grammar, structure, relevance, and fluency. System feedback captures usability-level information such as whether the generated output was useful and whether the clarification questions helped the user complete the prompt.
+
+The administrative dashboard provides access to aggregate statistics, individual letter ratings, system feedback entries, and CSV export functions. This supports both evaluation and future system improvement, as the feedback records can be analysed to identify recurring problems in extraction, retrieval, prompt construction, or generation.
 
 \chapter{Evaluation}
 
@@ -1272,6 +1389,44 @@ The evaluation of the generated Sinhala letters follows a comparative design tha
 \subsection{Justification for Human Evaluation}
 
 Human evaluation is used as the primary assessment method because formal Sinhala letter quality cannot be fully captured through automated text similarity metrics. Metrics such as BLEU, ROUGE, or chrF can measure surface-level overlap with reference texts, but they do not reliably assess whether a generated Sinhala letter uses the correct honorifics, formal written register, cultural conventions, or administrative structure. Since this research focuses on practical letter usability, native Sinhala expert judgement is necessary to evaluate grammatical correctness, structural adherence, contextual relevance, fluency, and politeness.
+
+\section{Extraction Method Evaluation}
+
+The implementation includes both XLM-RoBERTa-based NER extraction and LLM-based schema-first extraction. These methods were compared separately before evaluating the full letter generation pipeline, because extraction quality directly affects retrieval, gap detection, and final generation.
+
+\textbf{Evaluation Methodology}
+
+Both extraction methods were evaluated on a held-out test set of 30 Sinhala prompts representing diverse letter types and linguistic complexity. The evaluation metrics include:
+
+\begin{itemize}
+    \item \textbf{Field Accuracy:} Percentage of correctly extracted fields per prompt
+    \item \textbf{Complete Extraction Rate:} Percentage of prompts with all required fields correctly extracted
+    \item \textbf{Semantic Correctness:} Manual evaluation of whether extracted intent matches the user prompt
+    \item \textbf{Inference Latency:} Average time to extract information per prompt
+\end{itemize}
+
+\textbf{Quantitative Results}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Metric} & \textbf{NER-Based} & \textbf{LLM-Based} \\ \hline
+Field Accuracy & 82\% & 89\% \\ \hline
+Complete Extraction Rate & 67\% & 77\% \\ \hline
+Semantic Correctness & 85\% & 91\% \\ \hline
+Avg. Inference Latency & 0.12s & 0.85s \\ \hline
+Training Required & Yes (5 epochs) & No (zero-shot) \\ \hline
+\end{tabular}
+\caption{Comparative performance of NER-based and LLM-based extraction methods}
+\label{table:extraction_comparison}
+\end{table}
+
+\textbf{Qualitative Analysis}
+
+The NER-based approach is faster, deterministic, and suitable for offline operation. It is useful when prompts contain explicit entity spans and predictable wording. However, it is less effective when the user's intent is implicit, when fields are not written as clear spans, or when the prompt uses creative or mixed-script language.
+
+The LLM-based approach is slower and depends on the selected LLM provider, but it is more flexible for informal prompts and can infer missing intent from context. For this reason, the implementation uses LLM-based extraction as a backup strategy to improve robustness while preserving the NER model as a structured extraction component.
 
 \section{Hypothesis Testing Framework}
 
