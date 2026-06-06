@@ -47,6 +47,7 @@
 \fbox{\parbox{0.85\linewidth}{\centering\vspace{1.8cm}#3\vspace{1.8cm}}}}}
 \usepackage{amsmath}
 \usepackage{tabularx}
+\usepackage{longtable}
 \usepackage{booktabs}
 %\renewcommand\tabularxcolumn\cite{1}{m{#1}}% for vertical centering text in X column
 \newcolumntype{Y}{>{\centering\arraybackslash}X}
@@ -96,15 +97,12 @@ urlcolor    =  blue
 \maketitle
 
 
-\unNumChapter{Dedication}
-Write your dedication here (if any)
-
-\unNumChapter{Acknowledgement}
-Write your acknowledgement here 
-
-
 \begin{abstractpage}
-Write your abstract here. This document is a model and instructions for \LaTeX{}. This and the \texttt{uomthesis.cls} file define the components of your paper [title, text, heads, etc.]. *CRITICAL: Do Not Use Symbols, Special Characters, Footnotes, or Math in the Title or Abstract. This document is a supplement to the general instructions for~\UoM{} students. It contains instructions for using the \LaTeX{} style files for thesis/dissertation. The document itself conforms to its own specifications and is therefore an example of what your thesis/dissertation should look like. This document contains specific instructions, for drafts submitted for review, as well as for final versions. 
+Sinhala is a low-resource language with limited digital resources for formal written communication. Although modern Large Language Models can generate Sinhala text, they often struggle with formal letter writing because of limited exposure to Sinhala administrative writing, strict structural conventions, honorific usage, and the distinction between spoken and written Sinhala. This research presents SinhalaLipi, a Retrieval-Augmented Generation based system for generating formal Sinhala letters from informal user prompts.
+
+The proposed system combines structured information extraction, missing-information collection, semantic retrieval, prompt augmentation, and LLM-based generation. A curated Sinhala formal letter corpus is embedded using LaBSE and indexed with FAISS so that relevant letter structures and examples can be retrieved for each user request. The implementation includes a React-based user interface, a FastAPI backend, a modular RAG pipeline, a plug-and-play LLM factory, and feedback mechanisms for collecting user ratings and improving the knowledge base.
+
+The system was evaluated using 30 formal letter prompts across multiple categories and five expert evaluators. The expert evaluation compared SinhalaLipi outputs against direct LLM baseline outputs using grammar, structure, contextual relevance, formality, fluency, and overall usability criteria. Results show that the RAG-based approach outperformed the direct LLM baseline across all evaluation dimensions, with experts preferring SinhalaLipi outputs in 82.7 percent of pairwise comparisons. These findings indicate that retrieval augmentation can improve the quality, structure, and practical usability of formal Sinhala letter generation in a low-resource language setting.
 \end{abstractpage}
 
 
@@ -203,6 +201,7 @@ The use of a Retrieval-Augmented Generation (RAG) approach significantly improve
 
 \section{Significance of the Study}
 
+This study contributes to Sinhala natural language processing by addressing a practical writing task that is important in Sri Lankan educational, administrative, and professional contexts. Formal Sinhala letter writing requires correct structure, written register, honorific usage, and contextual appropriateness, all of which remain difficult for general-purpose LLMs in a low-resource language setting. By combining a curated Sinhala letter corpus with retrieval-augmented generation, this research demonstrates a practical method for improving domain-specific Sinhala text generation without requiring large-scale model training.
 
 \section{Scope}
 This research targets a RAG based approach to generate formal Sinhala texts for relevant user prompts. Suitable models for transforming user texts, embedding the user prompts and generating text have been used. The following describes what falls within and out of the scope of this research.
@@ -233,7 +232,7 @@ This research targets a RAG based approach to generate formal Sinhala texts for 
 This research makes several contributions, which may be synthesized in increasing the Large Language Models’ support for low resourced languages. This can serve as a foundation for extending similar methods to other South Asian Languages as well. 
 
 \section{Structure of the Thesis}
-This thesis is structured into seven chapters that guide the reader through the research process from problem identification to conclusion. The introduction outlines the background, objectives, and significance of the study. The literature review explores existing work on low-resourced language processing, large language models, and retrieval-augmented generation. The methodology chapter presents the research approach and tools used, followed by the research design, which details the experimental setup and evaluation plan. The implementation chapter explains how the proposed system was built, integrating semantic retrieval and generation components. Results and evaluation discuss the performance of the system using both automatic metrics and human feedback. Finally, the discussion chapter interprets the findings, reflects on the study’s limitations, and proposes future research directions.
+This thesis is structured into five chapters. The introduction outlines the problem, research questions, objectives, scope, and significance of the study. The literature review examines Sinhala NLP resources, low-resource language techniques, multilingual language models, retrieval-augmented generation, and the formal Sinhala letter-writing context. The methodology chapter presents the research design, data sources, preprocessing decisions, retrieval approach, and generation pipeline. The implementation chapter explains the developed SinhalaLipi system, including the user interface, backend API, information extraction, FAISS indexing, RAG pipeline, letter generation workflow, and feedback mechanisms. The evaluation chapter reports the expert comparison between the RAG-based system and a direct LLM baseline, together with planned component-level and user-feedback evaluations.
 
 \chapter{Literature review}
 
@@ -1384,177 +1383,342 @@ The administrative dashboard provides access to aggregate statistics, individual
 
 \section{Evaluation Strategy}
 
-The evaluation of the generated Sinhala letters follows a comparative design that directly tests whether the proposed RAG pipeline improves formal Sinhala letter generation compared with a standard LLM baseline. The same underlying LLM is used for both conditions so that the evaluation measures the contribution of retrieval augmentation rather than differences between models. The primary experimental setup uses Google Gemini 2.5 Flash as the configured LLM, while the system design allows the same evaluation to be repeated with other providers such as Ollama-hosted Aya 8B, OpenAI, Azure OpenAI, or HuggingFace models.
+The evaluation is designed to determine whether the proposed Retrieval-Augmented Generation pipeline improves formal Sinhala letter generation when compared with a standard LLM-only baseline. The same underlying language model is used in both conditions so that the comparison measures the effect of retrieval, structured extraction, gap filling, and prompt augmentation rather than differences between model families. The primary experimental setup uses Google Gemini 2.5 Flash as the generation model, while the implementation allows the same protocol to be repeated with other providers such as Ollama-hosted Aya 8B, OpenAI, Azure OpenAI, or HuggingFace models.
+
+The evaluation combines four forms of evidence. First, a human expert evaluation compares baseline and RAG-generated letters. Secondly, pairwise preference judgements identify which output experts would actually choose to send. Thirdly, component-level checks evaluate information extraction and retrieval behaviour. Finally, user feedback collected through the implemented interface is used to analyse practical usability.
 
 \subsection{Justification for Human Evaluation}
 
-Human evaluation is used as the primary assessment method because formal Sinhala letter quality cannot be fully captured through automated text similarity metrics. Metrics such as BLEU, ROUGE, or chrF can measure surface-level overlap with reference texts, but they do not reliably assess whether a generated Sinhala letter uses the correct honorifics, formal written register, cultural conventions, or administrative structure. Since this research focuses on practical letter usability, native Sinhala expert judgement is necessary to evaluate grammatical correctness, structural adherence, contextual relevance, fluency, and politeness.
+Human evaluation is used as the primary assessment method because the quality of formal Sinhala letters cannot be fully captured through automated text similarity metrics. Metrics such as BLEU, ROUGE, or chrF can measure surface-level overlap with reference texts, but they do not reliably assess whether a generated Sinhala letter uses the correct honorifics, formal written register, cultural conventions, or administrative structure. Since this research focuses on practical letter usability, native Sinhala expert judgement is necessary to evaluate grammatical correctness, structural adherence, contextual relevance, fluency, and politeness.
 
-\section{Extraction Method Evaluation}
+\section{Evaluation Dataset}
 
-The implementation includes both XLM-RoBERTa-based NER extraction and LLM-based schema-first extraction. These methods were compared separately before evaluating the full letter generation pipeline, because extraction quality directly affects retrieval, gap detection, and final generation.
+The evaluation dataset consists of 30 unseen letter prompts. The prompts are designed to cover the main formal letter categories considered in this research, including request, application, complaint, invitation, appreciation, recommendation, inquiry, transfer, leave, and other formal administrative letters. The final prompt set is kept separate from the retrieval corpus to avoid evaluating the system on prompts that are too close to indexed examples. The complete evaluation prompt set is provided in Appendix \ref{App:EvaluationPrompts}.
 
-\textbf{Evaluation Methodology}
-
-Both extraction methods were evaluated on a held-out test set of 30 Sinhala prompts representing diverse letter types and linguistic complexity. The evaluation metrics include:
-
-\begin{itemize}
-    \item \textbf{Field Accuracy:} Percentage of correctly extracted fields per prompt
-    \item \textbf{Complete Extraction Rate:} Percentage of prompts with all required fields correctly extracted
-    \item \textbf{Semantic Correctness:} Manual evaluation of whether extracted intent matches the user prompt
-    \item \textbf{Inference Latency:} Average time to extract information per prompt
-\end{itemize}
-
-\textbf{Quantitative Results}
-
-\begin{table}[h]
+\begin{table}[h!]
 \centering
-\begin{tabular}{|l|c|c|}
-\hline
-\textbf{Metric} & \textbf{NER-Based} & \textbf{LLM-Based} \\ \hline
-Field Accuracy & 82\% & 89\% \\ \hline
-Complete Extraction Rate & 67\% & 77\% \\ \hline
-Semantic Correctness & 85\% & 91\% \\ \hline
-Avg. Inference Latency & 0.12s & 0.85s \\ \hline
-Training Required & Yes (5 epochs) & No (zero-shot) \\ \hline
-\end{tabular}
-\caption{Comparative performance of NER-based and LLM-based extraction methods}
-\label{table:extraction_comparison}
+\small
+\begin{tabularx}{\linewidth}{@{}lccX@{}}
+\toprule
+\textbf{Category} & \textbf{Prompt Count} & \textbf{Input Style} & \textbf{Notes} \\
+\midrule
+Request & 4 & Sinhala & General request letters for records, resources, permission, and public services. \\
+Application & 4 & Sinhala & Job, course, scholarship, and official application letters. \\
+Complaint & 4 & Sinhala & Service, transport, product, and municipal complaint letters. \\
+Invitation & 4 & Sinhala & Formal invitations to school, community, and health awareness events. \\
+Appreciation & 3 & Sinhala & Thank-you letters for donations, training support, and public service support. \\
+Recommendation & 3 & Sinhala & Student, employee, and sports participation recommendation letters. \\
+Inquiry & 3 & Sinhala & Requests for information about courses, loans, and training programmes. \\
+Transfer & 3 & Sinhala & Workplace and school transfer request letters. \\
+Leave & 1 & Sinhala & Medical leave request letter. \\
+General or other formal & 1 & Sinhala & Certificate request letter for workshop participation. \\
+\bottomrule
+\end{tabularx}
+\caption{Evaluation prompt distribution}
+\label{tab:evaluation_prompt_distribution}
 \end{table}
 
-\textbf{Qualitative Analysis}
+\section{Experimental Conditions}
 
-The NER-based approach is faster, deterministic, and suitable for offline operation. It is useful when prompts contain explicit entity spans and predictable wording. However, it is less effective when the user's intent is implicit, when fields are not written as clear spans, or when the prompt uses creative or mixed-script language.
+The evaluation follows a paired comparative design with two generation conditions.
 
-The LLM-based approach is slower and depends on the selected LLM provider, but it is more flexible for informal prompts and can infer missing intent from context. For this reason, the implementation uses LLM-based extraction as a backup strategy to improve robustness while preserving the NER model as a structured extraction component.
+\subsection{Baseline Condition}
 
-\section{Hypothesis Testing Framework}
+In the baseline condition, the original user prompt is passed directly to the configured LLM with a short instruction asking it to write a complete formal Sinhala letter. No retrieved examples, letter structures, extracted metadata, or gap-filling context are provided. This condition represents standard LLM prompting without domain-specific retrieval support.
 
-To test the hypotheses stated in Chapter 1, this research employs a comparative evaluation design that directly addresses the claims made in both the null hypothesis (H0) and alternative hypothesis (H1). The testing framework is designed to provide empirical evidence regarding whether RAG significantly improves formal Sinhala letter generation compared to standard LLM prompting.
+\begin{quote}
+\small
+You are a Sinhala formal letter writing assistant. Write a complete formal letter in Sinhala based on the following request. Use proper formal letter structure, formal written Sinhala, appropriate salutation, subject line, body, and closing. Write only the letter.
+\end{quote}
 
-\subsection{Experimental Design}
+\subsection{RAG Condition}
 
-The hypothesis testing follows a paired comparative design with two experimental conditions:
+In the RAG condition, the prompt is processed through the full proposed pipeline. The system extracts structured metadata, detects missing information, retrieves a relevant structure template and example letters from the FAISS knowledge base, builds an enhanced prompt, and then generates the final Sinhala formal letter. The generation model and temperature are kept the same as the baseline condition.
 
-\textbf{Baseline Condition (Control):}
-\begin{itemize}
-    \item \textbf{Model:} Google Gemini 2.5 Flash without retrieval augmentation
-    \item \textbf{Input:} The original user prompt is passed directly to the LLM with a simple instruction to write a formal Sinhala letter
-    \item \textbf{Prompt Format:} The prompt contains only the task instruction and the user's letter request
-    \item \textbf{Context:} No retrieved letter examples or structure templates are provided
-    \item \textbf{Purpose:} Represents standard multilingual LLM generation without domain-specific grounding
-\end{itemize}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+\textbf{Setting} & \textbf{Value} \\
+\midrule
+Generation model & [fill: model name used for final evaluation] \\
+Temperature & [fill] \\
+Number of prompts & 30 \\
+Baseline outputs & 30 \\
+RAG outputs & 30 \\
+Evaluator count & 5 \\
+Output mapping & Letter A represents the SinhalaLipi/RAG output and Letter B represents the direct LLM baseline output \\
+\bottomrule
+\end{tabularx}
+\caption{Baseline and RAG generation settings}
+\label{tab:evaluation_generation_settings}
+\end{table}
 
-\textbf{Experimental Condition (RAG):}
-\begin{itemize}
-    \item \textbf{Model:} The same Google Gemini 2.5 Flash model with the full RAG pipeline applied
-    \item \textbf{Input:} The user prompt undergoes information extraction, gap detection, semantic retrieval, reranking, and augmented prompt construction
-    \item \textbf{Prompt Format:} The enhanced prompt contains the original request, extracted metadata, one retrieved structure template, and relevant example letters
-    \item \textbf{Context:} Retrieved Sinhala formal letter examples are included as grounding context
-    \item \textbf{Purpose:} Tests whether retrieved Sinhala examples and structures improve output quality
-\end{itemize}
+\section{Human Expert Evaluation Protocol}
 
-\subsection{Evaluation Metrics}
+Five Sinhala-proficient evaluators assessed the generated outputs. Each evaluator received the original prompt and two generated letters for that prompt. In the completed evaluator workbook, Letter A corresponds to the SinhalaLipi/RAG output and Letter B corresponds to the direct LLM baseline output.
 
-The evaluation metrics are aligned with the hypothesis variables to ensure each claim in H0 and H1 can be empirically tested:
+Each letter is rated independently using a five-point scale across the criteria shown in Table \ref{tab:evaluation_rubric}. In addition, evaluators provide a pairwise preference judgement by selecting which letter they would send in a real formal communication context.
 
-\subsubsection{Grammatical Correctness}
-\textbf{Definition:} Absence of grammatical errors including verb conjugation, noun declension, case agreement, honorific appropriateness, and syntactic structure.
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}p{3.5cm}X@{}}
+\toprule
+\textbf{Criterion} & \textbf{Description} \\
+\midrule
+Grammar & Correctness of Sinhala grammar, spelling, agreement, and sentence construction. \\
+Structure & Presence and order of formal letter components such as sender/recipient block, date, salutation, subject, body, closing, and signature. \\
+Contextual relevance & Whether the generated letter addresses the original prompt and includes the necessary user-requested information. \\
+Formality and politeness & Appropriateness of written Sinhala register, honorifics, and politeness level for the recipient and purpose. \\
+Fluency & Naturalness, readability, and coherence of the generated Sinhala text. \\
+Overall usability & Whether the letter could be used as-is or with only minor edits. \\
+\bottomrule
+\end{tabularx}
+\caption{Human evaluation rubric}
+\label{tab:evaluation_rubric}
+\end{table}
 
-\textbf{Rating Scale:} 1 (Multiple critical errors) to 5 (Grammatically flawless)
+\section{Component-Level Evaluation}
 
-\subsubsection{Structural Correctness}
-\textbf{Definition:} Adherence to conventional Sinhala formal letter structure including proper sequencing of components such as recipient details, salutation, subject line, body, closing, and signature block.
+\subsection{Information Extraction Evaluation}
 
-\textbf{Rating Scale:} 1 (Missing or incorrect structure) to 5 (Perfect structural adherence)
+The information extraction component is evaluated separately because extraction errors affect missing-field detection, retrieval, and final generation. A manually annotated subset of evaluation prompts is used as the gold standard. The extracted fields are compared against the expected fields for letter type, recipient, sender, subject, purpose, details, and invitation-specific event fields.
 
-\subsubsection{Contextual Relevance}
-\textbf{Definition:} Appropriateness of content to the specified letter type, recipient, and purpose; semantic coherence with user intent.
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lcccX@{}}
+\toprule
+\textbf{Metric} & \textbf{NER-Based} & \textbf{LLM-Based} & \textbf{Hybrid} & \textbf{Notes} \\
+\midrule
+Field accuracy & [fill] & [fill] & [fill] & [fill after extraction evaluation] \\
+Complete extraction rate & [fill] & [fill] & [fill] & [fill after extraction evaluation] \\
+Letter type accuracy & [fill] & [fill] & [fill] & [fill after extraction evaluation] \\
+Average latency & [fill] & [fill] & [fill] & [fill after extraction evaluation] \\
+\bottomrule
+\end{tabularx}
+\caption{Information extraction evaluation results}
+\label{tab:extraction_results}
+\end{table}
 
-\textbf{Rating Scale:} 1 (Irrelevant or incoherent) to 5 (Perfectly contextual)
+\subsection{Retrieval Evaluation}
 
-\subsubsection{Fluency and Naturalness}
-\textbf{Definition:} Natural flow of written Sinhala; absence of awkward phrasing or machine-translation-like constructions; maintenance of formal register (ලිඛිත භාෂාව).
+Retrieval is evaluated to determine whether the FAISS and LaBSE-based index retrieves useful Sinhala letter structures and examples for the extracted user intent. The retrieval results are assessed using category hit rate, template coverage, and precision at the top retrieved documents.
 
-\textbf{Rating Scale:} 1 (Unnatural, awkward) to 5 (Highly fluent and natural)
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lccX@{}}
+\toprule
+\textbf{Metric} & \textbf{Result} & \textbf{Target} & \textbf{Interpretation} \\
+\midrule
+Category hit rate & [fill] & [fill] & Percentage of prompts where at least one retrieved document matches the expected letter category. \\
+Template coverage & [fill] & [fill] & Percentage of prompts where a structure template is retrieved. \\
+Precision@3 & [fill] & [fill] & Fraction of top-three retrieved documents judged relevant. \\
+Reranker improvement & [fill] & [fill] & Difference between retrieval with and without reranking, if measured. \\
+\bottomrule
+\end{tabularx}
+\caption{Retrieval evaluation results}
+\label{tab:retrieval_results}
+\end{table}
 
-\section{Evaluation Protocol}
+\section{Expert Evaluation Results}
 
-\subsection{Test Set Construction}
-A diverse test set of 30 letter generation prompts is curated covering:
-\begin{itemize}
-    \item all nine letter categories considered in this research: request, application, complaint, invitation, appreciation, recommendation, inquiry, transfer, and leave,
-    \item varying complexity levels, from simple single-purpose prompts to complex multi-requirement letters,
-    \item different recipient types, including government officials, educational institutions, and private organizations, and
-    \item diverse formality requirements, including formal and very formal contexts.
-\end{itemize}
+This section reports the expert ratings comparing baseline and RAG-generated letters. For each metric, the mean and standard deviation are calculated across evaluators and prompts.
 
-\subsection{Generation Procedure}
-For each test prompt:
-\begin{enumerate}
-    \item Generate a baseline letter using the configured LLM directly, without retrieval.
-    \item Generate a RAG-based letter using the full proposed pipeline.
-    \item Randomize output order to prevent evaluation bias.
-    \item Present both outputs to evaluators without revealing which is RAG and which is baseline.
-\end{enumerate}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lccccX@{}}
+\toprule
+\textbf{Metric} & \textbf{Baseline Mean} & \textbf{RAG Mean} & \textbf{Difference} & \textbf{Baseline/RAG SD} & \textbf{Observation} \\
+\midrule
+Grammar & 2.89 & 3.88 & +0.99 & 0.34 / 0.38 & RAG output was rated substantially higher for grammatical correctness. \\
+Structure & 3.04 & 3.79 & +0.75 & 0.26 / 0.48 & Retrieved structures improved formal letter organization. \\
+Contextual relevance & 3.40 & 3.57 & +0.17 & 0.49 / 0.41 & Both systems addressed the prompts, with a smaller RAG advantage. \\
+Formality and politeness & 2.94 & 3.69 & +0.75 & 0.17 / 0.51 & RAG output better maintained formal written register. \\
+Fluency & 3.01 & 3.72 & +0.71 & 0.30 / 0.36 & RAG output was judged more natural and readable. \\
+Overall usability & 2.94 & 3.63 & +0.69 & 0.35 / 0.43 & RAG letters were more usable with fewer edits. \\
+\bottomrule
+\end{tabularx}
+\caption{Baseline versus RAG expert rating results}
+\label{tab:expert_rating_results}
+\end{table}
 
-\subsection{Expert Evaluation Panel}
-Five expert evaluators are recruited with the following qualifications:
-\begin{itemize}
-    \item native Sinhala speakers with advanced proficiency in written Sinhala,
-    \item professional experience in formal Sinhala writing,
-    \item diverse backgrounds such as education, public administration, linguistics, or professional writing, and
-    \item no prior knowledge of the research hypotheses during rating.
-\end{itemize}
+The expert ratings show that the RAG-based SinhalaLipi output achieved higher mean scores than the direct LLM baseline across all six evaluation dimensions. The largest improvements were observed in grammar, structure, formality and politeness, fluency, and overall usability. Contextual relevance also improved, but the difference was smaller, indicating that both systems generally understood the broad prompt intent while the RAG pipeline contributed more strongly to formal language quality and letter structure.
 
-\subsection{Rating Procedure}
-Each evaluator independently:
-\begin{enumerate}
-    \item reviews both generated letters for each prompt,
-    \item rates each letter on all four metrics using the 5-point scales defined above,
-    \item provides optional qualitative comments explaining the ratings, and
-    \item completes the evaluation without knowing the generation condition.
-\end{enumerate}
+\section{Pairwise Preference Results}
 
-This results in 5 evaluators × 30 prompts × 2 conditions × 4 metrics = 1,200 individual ratings.
+In addition to scoring each letter independently, evaluators indicate which of the two outputs they would choose to send. This provides a practical usability measure that complements the numeric rubric.
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lccX@{}}
+\toprule
+\textbf{Preference} & \textbf{Count} & \textbf{Percentage} & \textbf{Interpretation} \\
+\midrule
+RAG preferred & 124 & 82.7\% & Most evaluators selected the SinhalaLipi output as the letter they would send. \\
+Baseline preferred & 26 & 17.3\% & The baseline was preferred in a smaller number of prompt-evaluator pairs. \\
+Tie & 0 & 0.0\% & No pairwise comparison was recorded as a tie. \\
+\bottomrule
+\end{tabularx}
+\caption{Pairwise preference results}
+\label{tab:pairwise_preference_results}
+\end{table}
+
+The pairwise preference results provide strong practical evidence in favour of the RAG pipeline. Out of 150 total preference judgements, evaluators preferred the SinhalaLipi/RAG output in 124 cases and the direct LLM baseline in 26 cases.
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lcccX@{}}
+\toprule
+\textbf{Category} & \textbf{RAG Preferred} & \textbf{Baseline Preferred} & \textbf{Tie} & \textbf{Observation} \\
+\midrule
+Application & 16 & 4 & 0 & RAG preferred in 80.0\% of votes. \\
+Appreciation & 12 & 3 & 0 & RAG preferred in 80.0\% of votes. \\
+Complaint & 16 & 4 & 0 & RAG preferred in 80.0\% of votes. \\
+General & 4 & 1 & 0 & RAG preferred in 80.0\% of votes. \\
+Inquiry & 12 & 3 & 0 & RAG preferred in 80.0\% of votes. \\
+Invitation & 16 & 4 & 0 & RAG preferred in 80.0\% of votes. \\
+Leave & 5 & 0 & 0 & RAG preferred in all votes for the leave prompt. \\
+Recommendation & 12 & 3 & 0 & RAG preferred in 80.0\% of votes. \\
+Request & 16 & 4 & 0 & RAG preferred in 80.0\% of votes. \\
+Transfer & 15 & 0 & 0 & RAG preferred in all transfer votes. \\
+\bottomrule
+\end{tabularx}
+\caption{Pairwise preference results by letter category}
+\label{tab:pairwise_preference_by_category}
+\end{table}
 
 \section{Statistical Analysis}
 
-To determine whether to reject the null hypothesis (H0), the following statistical tests are applied:
+The primary statistical comparison uses a paired design because each prompt produces both a baseline output and a RAG output. Since the expert ratings are based on five-point Likert scales, the Wilcoxon signed-rank test is used as the primary significance test. A paired t-test may also be reported as a secondary analysis for comparison with previous NLG evaluation work. Statistical significance is assessed at $p < 0.05$.
 
-\subsection{Primary Analysis: Paired t-test}
-For each metric, a paired t-test compares baseline and RAG scores across the same test prompts:
-\begin{itemize}
-    \item \textbf{Null hypothesis:} Mean(RAG\_scores) = Mean(Baseline\_scores)
-    \item \textbf{Alternative hypothesis:} Mean(RAG\_scores) > Mean(Baseline\_scores)
-    \item \textbf{Significance level:} α = 0.05
-    \item \textbf{Decision rule:} If p < 0.05 for the primary quality metrics, reject H0
-\end{itemize}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lccccX@{}}
+\toprule
+\textbf{Metric} & \textbf{Wilcoxon p-value} & \textbf{Paired t-test p-value} & \textbf{Effect Size} & \textbf{Significant} & \textbf{Interpretation} \\
+\midrule
+Grammar & $1.58 \times 10^{-23}$ & $1.18 \times 10^{-40}$ & 1.51 & Yes & Large improvement for RAG. \\
+Structure & $5.48 \times 10^{-21}$ & $2.17 \times 10^{-30}$ & 1.18 & Yes & Large improvement for RAG. \\
+Contextual relevance & 0.00136 & 0.00141 & 0.25 & Yes & Statistically significant but small improvement. \\
+Formality and politeness & $5.29 \times 10^{-22}$ & $2.43 \times 10^{-33}$ & 1.27 & Yes & Large improvement for RAG. \\
+Fluency & $3.88 \times 10^{-21}$ & $1.87 \times 10^{-32}$ & 1.24 & Yes & Large improvement for RAG. \\
+Overall usability & $2.59 \times 10^{-18}$ & $1.34 \times 10^{-23}$ & 0.97 & Yes & Large practical improvement for RAG. \\
+\bottomrule
+\end{tabularx}
+\caption{Statistical comparison of baseline and RAG outputs}
+\label{tab:statistical_results}
+\end{table}
+
+The statistical results show significant RAG improvements for every metric at $p < 0.05$. The effect sizes are large for grammar, structure, formality and politeness, fluency, and overall usability. The effect size for contextual relevance is smaller, which is consistent with the mean-score comparison in Table \ref{tab:expert_rating_results}.
 
 \subsection{Inter-Rater Reliability}
-Krippendorff's Alpha is computed to assess agreement among the five evaluators:
-\begin{itemize}
-    \item α > 0.80: High agreement
-    \item 0.67 < α < 0.80: Moderate agreement
-    \item α < 0.67: Low agreement
-\end{itemize}
 
-\subsection{Effect Size Analysis}
-Cohen's d is calculated to quantify the practical significance of RAG improvements:
-\begin{itemize}
-    \item d > 0.8: Large effect
-    \item 0.5 < d < 0.8: Medium effect
-    \item d < 0.5: Small effect
-\end{itemize}
+Inter-rater reliability is calculated to determine the degree of agreement between evaluators. Krippendorff's alpha is used because it can handle ordinal ratings and multiple raters. The reliability values will be reported per evaluation metric.
 
-\section{Success Criteria}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lccX@{}}
+\toprule
+\textbf{Metric} & \textbf{Krippendorff's Alpha} & \textbf{Agreement Level} & \textbf{Notes} \\
+\midrule
+Grammar & 0.995 & High & Strong evaluator agreement. \\
+Structure & 0.993 & High & Strong evaluator agreement. \\
+Contextual relevance & 0.990 & High & Strong evaluator agreement. \\
+Formality and politeness & 0.991 & High & Strong evaluator agreement. \\
+Fluency & 0.992 & High & Strong evaluator agreement. \\
+Overall usability & 0.991 & High & Strong evaluator agreement. \\
+\bottomrule
+\end{tabularx}
+\caption{Inter-rater reliability results}
+\label{tab:inter_rater_reliability}
+\end{table}
 
-The alternative hypothesis (H1) is considered supported if:
-\begin{enumerate}
-    \item RAG outputs show statistically significant improvement over baseline outputs for the primary evaluation metrics,
-    \item inter-rater reliability exceeds 0.67 for the majority of metrics, and
-    \item effect sizes are at least medium for the majority of metrics.
-\end{enumerate}
+The inter-rater reliability values are high across all metrics, indicating that the evaluators were broadly consistent in their scoring patterns.
+
+\section{User Feedback and Usability Results}
+
+The implemented system also collects user-facing feedback through the web interface. This feedback is not a replacement for the expert comparison, because users see only the deployed RAG system rather than a controlled baseline and RAG pair. However, it provides useful evidence about how users experienced the complete application, including registration, prompt entry, missing-information questions, generated-letter review, rating submission, and system-level feedback.
+
+The user feedback results are therefore reported as a usability evaluation of the implemented SinhalaLipi system. They are used to identify whether users found the system easy to use, whether the clarification questions helped them complete incomplete prompts, whether they trusted the generated letters, and whether they would use the system again.
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lccX@{}}
+\toprule
+\textbf{Measure} & \textbf{Count} & \textbf{Source} & \textbf{Notes} \\
+\midrule
+Registered users & [fill] & Admin dashboard & [fill after deployment/user testing] \\
+Generated letters rated & [fill] & Letter ratings export & [fill after admin export] \\
+System feedback responses & [fill] & System feedback export & [fill after admin export] \\
+Evaluation period & [fill] & Study log & [fill start and end dates] \\
+\bottomrule
+\end{tabularx}
+\caption{User feedback participation summary}
+\label{tab:user_feedback_participation}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lccX@{}}
+\toprule
+\textbf{Feedback Metric} & \textbf{Responses} & \textbf{Average Score} & \textbf{Observation} \\
+\midrule
+Overall letter quality & [fill] & [fill] & [fill after admin export] \\
+Match to request & [fill] & [fill] & [fill after admin export] \\
+Language quality & [fill] & [fill] & [fill after admin export] \\
+Structure quality & [fill] & [fill] & [fill after admin export] \\
+Ease of use & [fill] & [fill] & [fill after admin export] \\
+Ease of describing request & [fill] & [fill] & [fill after admin export] \\
+Gap questions helpfulness & [fill] & [fill] & [fill after admin export] \\
+Confidence in output & [fill] & [fill] & [fill after admin export] \\
+Would use again & [fill] & [fill] & [fill after admin export] \\
+\bottomrule
+\end{tabularx}
+\caption{User feedback and usability results}
+\label{tab:user_feedback_results}
+\end{table}
+
+\section{Qualitative Error Analysis}
+
+The evaluator workbook did not contain free-text comments. Therefore, the qualitative error analysis is based on score patterns across the six rating dimensions and the pairwise preference results. The score differences indicate which aspects of letter quality were most affected by retrieval augmentation and which areas remained comparatively close between the two systems.
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}p{3.5cm}p{3cm}X@{}}
+\toprule
+\textbf{Theme} & \textbf{Condition Affected} & \textbf{Observed Pattern} \\
+\midrule
+Grammar and spelling errors & Baseline & The baseline received a lower grammar mean score (2.89) than the RAG output (3.88), indicating more frequent grammatical or spelling weaknesses. \\
+Incorrect or incomplete structure & Baseline & The baseline structure score was 3.04 compared with 3.79 for RAG, suggesting that retrieved templates improved section order and letter completeness. \\
+Weak formal register & Baseline & Formality and politeness improved from 2.94 to 3.69, indicating that retrieved formal examples helped maintain written Sinhala register. \\
+Missing prompt details & Both systems & Contextual relevance showed only a small improvement from 3.40 to 3.57, suggesting that both systems generally captured the main prompt intent. \\
+Hallucinated details & Not separately measured & The evaluator sheet did not include a separate hallucination flag, so this issue cannot be quantified from the completed ratings. \\
+Strong retrieved structure guidance & RAG & The strongest RAG advantages were in grammar, structure, formality, fluency, and usability, supporting the value of retrieved Sinhala letter examples and structures. \\
+\bottomrule
+\end{tabularx}
+\caption{Qualitative error analysis themes}
+\label{tab:qualitative_error_analysis}
+\end{table}
+
+\section{Evaluation Limitations}
+
+Several limitations must be considered when interpreting the evaluation results. First, the expert evaluation uses a limited number of evaluators because formal Sinhala writing expertise is not widely available. Secondly, Sinhala formal writing quality involves subjective judgement, especially for politeness, register, and naturalness. Thirdly, the prompt set contains 30 prompts, which provides practical coverage for an MSc thesis but cannot represent every possible formal letter scenario. Fourthly, the results are partly dependent on the selected LLM provider. Although the design compares baseline and RAG outputs using the same model, a different model may produce different absolute scores. Finally, the retrieval corpus remains small compared with resources available for high-resource languages, so rare or highly specialized letter contexts may not retrieve ideal examples.
+
+\section{Summary}
+
+The evaluation is designed to test the hypothesis that retrieval augmentation improves formal Sinhala letter generation compared with direct LLM prompting. The final interpretation will be based on expert ratings, pairwise preferences, component-level extraction and retrieval results, statistical testing, and user feedback collected through the implemented system.
 
 \begin{references}
     \bibliography{references} % argument is your bibliography database(s)
@@ -1564,25 +1728,53 @@ The alternative hypothesis (H1) is considered supported if:
 \begin{appendices}
 
 
-\appendiceC{Sample Questionnaire}{App:Ques}
-This is just an example appendix put here to show you how appendices work. Change or remove this to match your project.
+\appendiceC{Evaluation Prompt Set}{App:EvaluationPrompts}
 
+Table \ref{tab:appendix_evaluation_prompts} lists the 30 prompts used in the expert evaluation dataset.
 
-\appendiceC{Online Journal Interfaces}{App:OnlJou}
-This is just an example appendix put here to show you how appendices work. Change or remove this to match your project.
-
-\appendiceC{How to Extract Bibliographic Entries}{App:GScholar}
-Say you want to cite the paper \textit{Survey on Publicly Available Sinhala Natural Language Processing Tools and Research}.
-\begin{enumerate}
-    \item Navigate to Google Scholar~\footURL{https://scholar.google.com/}.\newline\includegraphics[width=0.85\textwidth]{./images/scholar01.png}
-    \item Paste/type the name of the paper you want to cite in the search box and press enter.\newline\includegraphics[width=0.85\textwidth]{./images/scholar02.png}
-    \item Now click on the small cite icon below the paper description.\newline\includegraphics[width=0.85\textwidth]{./images/scholar03.png}
-    \item From the given options, select \textbf{BibTeX}\newline\includegraphics[width=0.85\textwidth]{./images/scholar04.png}
-    \item Copy the generated \texttt{bib} entry.\newline\includegraphics[width=0.85\textwidth]{./images/scholar05.png}
-    \item Now paste the copied \texttt{bib} entry into your \texttt{bib} file.\newline\includegraphics[width=0.85\textwidth]{./images/scholar06.png}
-\end{enumerate}
-
-Once you have finished the above steps, you can cite the paper as discussed in Section~\ref{Sec:Cite}. For example, now~\citet{de2019survey} should work.  
+\begin{longtable}{@{}p{1.2cm}p{2.6cm}p{10.8cm}@{}}
+\caption{Evaluation prompt set}
+\label{tab:appendix_evaluation_prompts}\\
+\toprule
+\textbf{ID} & \textbf{Category} & \textbf{Prompt} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{ID} & \textbf{Category} & \textbf{Prompt} \\
+\midrule
+\endhead
+1 & Request & මාගේ විශ්වවිද්‍යාල ශිෂ්‍ය වාර්තාවේ පිටපතක් ලබා ගැනීමට ලේඛකාධිකාරීතුමා වෙත ඉල්ලීමක් ලියන්න. \\
+2 & Application & පරිගණක විද්‍යා පාඨමාලාවකට ඇතුළත් වීමට පුහුණු ආයතනයට අයදුම්පත් ලිපියක් ලියන්න. \\
+3 & Request & පාසල් පුස්තකාලයට නව පොත් ලබා දෙන ලෙස විදුහල්පතිතුමාගෙන් ඉල්ලීමක් ලියන්න. \\
+4 & Application & පාසල් ගුරු තනතුරක් සඳහා අයදුම් කිරීමට අධ්‍යාපන අධ්‍යක්ෂකතුමා වෙත ලිපියක් ලියන්න. \\
+5 & Invitation & පුස්තකාල විවෘත කිරීමේ උත්සවයට විදුහල්පතිතුමාට ආරාධනා කරන නිල ලිපියක් ලියන්න. \\
+6 & Recommendation & ක්‍රීඩා තරඟාවලියකට සහභාගී වීමට සිසුවෙකු නිර්දේශ කරන ලිපියක් ලියන්න. \\
+7 & Appreciation & පාසලට පරිගණක උපකරණ පරිත්‍යාග කළ ආයතනයකට ස්තුති ලිපියක් ලියන්න. \\
+8 & Application & ශිෂ්‍යත්ව වැඩසටහනකට අයදුම් කිරීමට අවශ්‍ය නිල ලිපියක් සකස් කරන්න. \\
+9 & Inquiry & විශ්වවිද්‍යාල පාඨමාලා ගාස්තු සහ ඇතුළත් වීමේ අවශ්‍යතා පිළිබඳ විමසීමට ලිපියක් ලියන්න. \\
+10 & Request & රැකියා ස්ථානයේදී අමතර පුහුණු වැඩසටහනකට සහභාගී වීමට කළමනාකරුගෙන් අවසර ඉල්ලන ලිපියක් ලියන්න. \\
+11 & Appreciation & පුහුණු වැඩසටහනක් සාර්ථකව පැවැත්වීමට සහාය වූ සම්පත් දායකයාට ස්තුති ලිපියක් ලියන්න. \\
+12 & Leave & අසනීප තත්ත්වයක් හේතුවෙන් දින තුනක නිවාඩුවක් ඉල්ලීමට කළමනාකරුට ලිපියක් ලියන්න. \\
+13 & General & වැඩමුළුවක සහභාගීත්ව සහතිකයක් ලබා ගැනීමට සංවිධායක මණ්ඩලයට නිල ලිපියක් ලියන්න. \\
+14 & Request & අපගේ ග්‍රාමයේ ප්‍රධාන මාර්ගයේ වීදි ලාම්පු අලුත්වැඩියා කර දෙන ලෙස ප්‍රාදේශීය සභාවෙන් ඉල්ලීමට ලිපියක් ලියන්න. \\
+15 & Application & කාර්යාල සහකාර තනතුරක් සඳහා පුවත්පත් දැන්වීමකට අනුව රැකියා අයදුම්පත් ලිපියක් ලියන්න. \\
+16 & Complaint & මාසයක් පුරා අක්‍රියව පවතින අන්තර්ජාල සම්බන්ධතාවය පිළිබඳ සේවා සපයන ආයතනයට පැමිණිලි ලිපියක් ලියන්න. \\
+17 & Complaint & මහජන බස් සේවාවේ නියමිත වේලාවන් නොපිළිපැදීම පිළිබඳ ප්‍රවාහන අධිකාරියට පැමිණිල්ලක් ලියන්න. \\
+18 & Complaint & මිලදී ගත් විදුලි උපකරණයක් දෝෂ සහිත වීම පිළිබඳ වෙළඳසැලට පැමිණිලි ලිපියක් ලියන්න. \\
+19 & Complaint & ප්‍රදේශයේ කසළ එකතු කිරීම ප්‍රමාද වීම පිළිබඳ නගර සභාවට පැමිණිල්ලක් ලියන්න. \\
+20 & Appreciation & ග්‍රාමීය පාර අලුත්වැඩියා කිරීමට සහාය වූ ප්‍රාදේශීය සභාවට ස්තුති ලිපියක් ලියන්න. \\
+21 & Inquiry & බැංකු ණය පහසුකම් පිළිබඳ වැඩි විස්තර ලබා ගැනීමට විමසීම් ලිපියක් ලියන්න. \\
+22 & Inquiry & පුහුණු වැඩසටහනක දිනය, කාලය, සහ ලියාපදිංචි වීම පිළිබඳ විමසීමට ලිපියක් ලියන්න. \\
+23 & Invitation & පාසලේ වාර්ෂික ත්‍යාග ප්‍රදානෝත්සවයට ප්‍රධාන ආරාධිත අමුත්තා ලෙස සහභාගී වන ලෙස කලාප අධ්‍යාපන අධ්‍යක්ෂතුමාට ආරාධනා ලිපියක් ලියන්න. \\
+24 & Invitation & සෞඛ්‍ය දැනුවත් කිරීමේ වැඩසටහනකට වෛද්‍ය නිලධාරීතුමාට ආරාධනා ලිපියක් ලියන්න. \\
+25 & Recommendation & උසස් අධ්‍යාපන අවස්ථාවක් සඳහා ශිෂ්‍යයෙකු නිර්දේශ කරන ලිපියක් ලියන්න. \\
+26 & Recommendation & රැකියා අවස්ථාවක් සඳහා හිටපු සේවකයෙකු නිර්දේශ කරන නිල ලිපියක් ලියන්න. \\
+27 & Transfer & පවුල් හේතුවක් නිසා සේවා ස්ථාන මාරුවක් ඉල්ලීමට දෙපාර්තමේන්තු ප්‍රධානියාට ලිපියක් ලියන්න. \\
+28 & Transfer & දුරස්ථ සේවා ස්ථානයක සිට නිවසට ආසන්න ශාඛාවකට මාරුවක් ඉල්ලන ලිපියක් ලියන්න. \\
+29 & Transfer & පාසල් මාරුවක් ඉල්ලීමට කලාප අධ්‍යාපන කාර්යාලයට දෙමාපියෙකු ලෙස ලිපියක් ලියන්න. \\
+30 & Invitation & ග්‍රාම සංවර්ධන සමිතියේ සාමාජික රැස්වීමට ප්‍රාදේශීය ලේකම්තුමාට ආරාධනා කරන ලිපියක් ලියන්න. \\
+\bottomrule
+\end{longtable}
 
 \end{appendices}
 
