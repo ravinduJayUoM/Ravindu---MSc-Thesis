@@ -15,10 +15,10 @@
 \setsansfont{FreeSans}
 \setmonofont{FreeMono}
 
-% Define Sinhala font family
-\newfontfamily\sinhalafont{Noto Sans Sinhala}
-\newfontfamily\sinhalafontsf{Noto Sans Sinhala}
-\newfontfamily\sinhalacodefont{FreeSerif}
+% Define Sinhala font family with Script=Sinhala constraint for correct complex text layout (CTL) rendering
+\newfontfamily\sinhalafont[Script=Sinhala]{Noto Sans Sinhala}
+\newfontfamily\sinhalafontsf[Script=Sinhala]{Noto Sans Sinhala}
+\newfontfamily\sinhalacodefont[Script=Sinhala]{Noto Sans Sinhala}
 
 % Convenience macro for inline Sinhala text — use \si{...} around all Sinhala characters
 % to ensure correct font rendering in the PDF output.
@@ -313,11 +313,11 @@ When selecting an LLM for this research, several alternatives were evaluated:
 \begin{itemize}
     \item \textbf{Sinhala coverage:} Aya-101 was trained through a global, community-driven effort on a curated multilingual dataset covering 101 languages including Sinhala, giving it explicit Sinhala support that most general-purpose models lack. The lighter 8B Aya-23 variant does not officially list Sinhala among its 23 languages, but is retained as a practical local-deployment option whose Sinhala behaviour can be supplemented by the retrieval-augmented context provided by the pipeline.
 
-    \item \textbf{Extraction quality:} Its instruction-following ability and Sinhala-inclusive training make Aya 8B a strong candidate for extracting structured information from informal Sinhala prompts, including letter types ({\sinhalafont ඉල්ලීම්, පැමිණිලි, ස්තූති}), recipients, subjects, and purposes—a task where smaller models such as LLaMA 3.2:3b consistently failed in initial testing.
+    \item \textbf{Extraction quality:} Its instruction-following ability and Sinhala-inclusive training make Aya 8B a strong candidate for extracting structured information from informal Sinhala prompts, including letter types (\si{ඉල්ලීම්, පැමිණිලි, ස්තූති}), recipients, subjects, and purposes—a task where smaller models such as LLaMA 3.2:3b consistently failed in initial testing.
 
     \item \textbf{Local deployment:} Aya 8B can be deployed locally using the Ollama inference framework, which is relevant for scenarios where data privacy or offline operation is required.
 
-    \item \textbf{Generation quality:} Aya 8B is designed to maintain formal Sinhala register ({\sinhalafont ලිඛිත භාෂාව}), apply honorific verb forms based on context, and structure letters according to conventional Sinhala formal letter templates, making it a suitable local-deployment alternative for the generation step.
+    \item \textbf{Generation quality:} Aya 8B is designed to maintain formal Sinhala register (\si{ලිඛිත භාෂාව}), apply honorific verb forms based on context, and structure letters according to conventional Sinhala formal letter templates, making it a suitable local-deployment alternative for the generation step.
 
     \item \textbf{Context window:} Aya 8B supports an 8192-token context window, sufficient for incorporating multiple retrieved letter examples in the RAG pipeline along with extraction results and generation instructions.
 \end{itemize}
@@ -341,31 +341,31 @@ Sinhala formal letters follow a strict structural convention that must be mainta
 Formal Sinhala letters can be categorized into several distinct types, each with specific purposes and slightly different conventions. Understanding these categories is essential for generating contextually appropriate letters, as each type has characteristic vocabulary, tone, and structural variations. The main categories include:
 
 \begin{enumerate}
-    \item Request Letters ({\sinhalafont ඉල්ලීම් ලිපි}) - Used to formally request information, permissions, resources, or actions from authorities or institutions.
-    \item Invitation Letters ({\sinhalafont ආරාධනා ලිපි}) - Formal invitations to events, ceremonies, or meetings.
-    \item Thank You Letters ({\sinhalafont ස්තූති ලිපි}) - Expressing formal gratitude for assistance, support, or participation.
-    \item Recommendation Letters ({\sinhalafont නිර්දේශ ලිපි}) - Providing formal recommendations for individuals for employment, education, or other purposes.
-    \item Inquiry Letters ({\sinhalafont විචාරණ ලිපි}) - Seeking information or clarification on specific matters.
-    \item Transfer Letters ({\sinhalafont මාරු ලිපි}) - Requesting or notifying transfers of position, location, or responsibility.
-    \item Leave Letters ({\sinhalafont නිවාඩු ලිපි}) - Formally requesting time off from work or educational institutions.
-    \item Complaint Letters ({\sinhalafont පැමිණිලි ලිපි}) - Lodging formal complaints about services, conduct, or situations.
-    \item Apology Letters ({\sinhalafont සමාව ඉල්ලීමේ ලිපි}) - Offering formal apologies for mistakes, delays, or misconduct.
+    \item Request Letters (\si{ඉල්ලීම් ලිපි}) - Used to formally request information, permissions, resources, or actions from authorities or institutions.
+    \item Invitation Letters (\si{ආරාධනා ලිපි}) - Formal invitations to events, ceremonies, or meetings.
+    \item Thank You Letters (\si{ස්තූති ලිපි}) - Expressing formal gratitude for assistance, support, or participation.
+    \item Recommendation Letters (\si{නිර්දේශ ලිපි}) - Providing formal recommendations for individuals for employment, education, or other purposes.
+    \item Inquiry Letters (\si{විචාරණ ලිපි}) - Seeking information or clarification on specific matters.
+    \item Transfer Letters (\si{මාරු ලිපි}) - Requesting or notifying transfers of position, location, or responsibility.
+    \item Leave Letters (\si{නිවාඩු ලිපි}) - Formally requesting time off from work or educational institutions.
+    \item Complaint Letters (\si{පැමිණිලි ලිපි}) - Lodging formal complaints about services, conduct, or situations.
+    \item Apology Letters (\si{සමාව ඉල්ලීමේ ලිපි}) - Offering formal apologies for mistakes, delays, or misconduct.
 \end{enumerate}
 
 \subsection{Challenges in Formal Sinhala Letter Generation}
 While the aforementioned techniques and models provide a foundation for Sinhala NLP, generating formal Sinhala letters presents unique challenges that intersect linguistic complexity, cultural conventions, and technical limitations. Understanding these challenges is essential for designing an effective RAG-based system.
 
 \subsubsection{Morphological Complexity}
-Sinhala is a morphologically rich language with complex inflectional patterns. Words in Sinhala change their form based on case, number, tense, gender, honorific level, and grammatical function, creating significant challenges for language models. Unlike English, where word forms are relatively stable, Sinhala verbs can take dozens of different forms depending on tense, aspect, mood, and politeness level. For instance, the verb "to go" (යනවා) has distinct forms for different contexts: යන්න (infinitive), ගියා (past informal), ගියේය (past formal/written), යති (literary present), and many others. Similarly, nouns decline based on case and number, with different declension patterns for animate and inanimate objects. This morphological richness means that LLMs must not only select appropriate vocabulary but also generate the correct inflected forms, which requires deep understanding of Sinhala grammar – knowledge that is often lacking in models trained primarily on high-resource languages.
+Sinhala is a morphologically rich language with complex inflectional patterns. Words in Sinhala change their form based on case, number, tense, gender, honorific level, and grammatical function, creating significant challenges for language models. Unlike English, where word forms are relatively stable, Sinhala verbs can take dozens of different forms depending on tense, aspect, mood, and politeness level. For instance, the verb "to go" (\si{යනවා}) has distinct forms for different contexts: \si{යන්න} (infinitive), \si{ගියා} (past informal), \si{ගියේය} (past formal/written), \si{යති} (literary present), and many others. Similarly, nouns decline based on case and number, with different declension patterns for animate and inanimate objects. This morphological richness means that LLMs must not only select appropriate vocabulary but also generate the correct inflected forms, which requires deep understanding of Sinhala grammar – knowledge that is often lacking in models trained primarily on high-resource languages.
 
 \subsubsection{Honorifics and Register}
-Formal Sinhala letter writing demands careful attention to honorifics and linguistic register, which reflect the social relationship between sender and recipient. Sinhala has distinct honorific systems encoded in verb forms, pronouns, and noun declensions. For example, addressing a superior requires using honorific verbs (පිළිතුරු දෙන්න vs. පිළිතුරු දෙනවා), respectful pronouns (ඔබතුමා vs. ඔයා), and formal noun forms (ලිපිය vs. පොත). The choice of honorific level depends on multiple factors: the recipient's social status, professional relationship, institutional context, and the letter's purpose. A job application to a principal requires very high honorifics (ඉතා ගෞරවනීය), while a request to a peer organization uses moderate formality. Furthermore, formal written Sinhala (ලිඛිත භාෂාව) differs substantially from spoken Sinhala (කථන භාෂාව), employing distinct vocabulary, verb forms, and sentence structures. LLMs must navigate these sociolinguistic nuances to produce contextually appropriate letters – a task requiring sophisticated pragmatic understanding beyond syntactic correctness.
+Formal Sinhala letter writing demands careful attention to honorifics and linguistic register, which reflect the social relationship between sender and recipient. Sinhala has distinct honorific systems encoded in verb forms, pronouns, and noun declensions. For example, addressing a superior requires using honorific verbs (\si{පිළිතුරු දෙන්න} vs. \si{පිළිතුරු දෙනවා}), respectful pronouns (\si{ඔබතුමා} vs. \si{ඔයා}), and formal noun forms (\si{ලිපිය} vs. \si{පොත}). The choice of honorific level depends on multiple factors: the recipient's social status, professional relationship, institutional context, and the letter's purpose. A job application to a principal requires very high honorifics (\si{ඉතා ගෞරවනීය}), while a request to a peer organization uses moderate formality. Furthermore, formal written Sinhala (\si{ලිඛිත භාෂාව}) differs substantially from spoken Sinhala (\si{කථන භාෂාව}), employing distinct vocabulary, verb forms, and sentence structures. LLMs must navigate these sociolinguistic nuances to produce contextually appropriate letters – a task requiring sophisticated pragmatic understanding beyond syntactic correctness.
 
 \subsubsection{Limited Digital Corpus}
 A fundamental challenge is the scarcity of digitized Sinhala formal letters compared to high-resource languages. While English has vast corpora of business correspondence, legal documents, and formal writing available for training, Sinhala formal letters exist primarily in physical archives in government offices, schools, and institutions. This data scarcity has multiple implications: (1) LLMs have minimal exposure to formal Sinhala letter structures during pretraining, leading to poor zero-shot performance; (2) fine-tuning approaches are constrained by lack of training examples; and (3) without sufficient data, models cannot learn the conventional phrases, templates, and structural patterns that characterize different letter types. Even when digital Sinhala text exists (e.g., news articles, social media, Wikipedia), it predominantly represents informal or journalistic registers rather than the highly formal administrative language required for official correspondence. This domain mismatch further limits the utility of general Sinhala corpora for formal letter generation.
 
 \subsubsection{Diglossia}
-Sinhala exhibits strong diglossia, with significant structural and lexical differences between formal written Sinhala and colloquial spoken Sinhala. This diglossic variation extends beyond simple register differences; the written and spoken forms use different vocabulary sets, distinct grammatical constructions, and even different verb paradigms. For example, the spoken Sinhala phrase "මම කාලා" (I ate) becomes "මම කෑවෙමි" or "අනුභව කළෙමි" in formal written contexts. Many common spoken words have completely different formal equivalents: spoken "දැන්" (now) becomes written "දැන්"; spoken "කොහාද" (where) becomes written "කොතැනද" or "කවරස්ථානයේද" in very formal contexts. LLMs trained primarily on web-crawled Sinhala data tend to produce colloquial forms even when formal register is required, because spoken Sinhala dominates social media and online forums. Successfully generating formal letters requires the model to consistently maintain written register throughout the document, applying the appropriate verb forms, vocabulary, and sentence structures – a challenging code-switching task that many multilingual models perform poorly.
+Sinhala exhibits strong diglossia, with significant structural and lexical differences between formal written Sinhala and colloquial spoken Sinhala. This diglossic variation extends beyond simple register differences; the written and spoken forms use different vocabulary sets, distinct grammatical constructions, and even different verb paradigms. For example, the spoken Sinhala phrase "\si{මම කාලා}" (I ate) becomes "\si{මම කෑවෙමි}" or "\si{අනුභව කළෙමි}" in formal written contexts. Many common spoken words have completely different formal equivalents: spoken "\si{දැන්}" (now) becomes written "\si{දැන්}"; spoken "\si{කොහාද}" (where) becomes written "\si{කොතැනද}" or "\si{කවරස්ථානයේද}" in very formal contexts. LLMs trained primarily on web-crawled Sinhala data tend to produce colloquial forms even when formal register is required, because spoken Sinhala dominates social media and online forums. Successfully generating formal letters requires the model to consistently maintain written register throughout the document, applying the appropriate verb forms, vocabulary, and sentence structures – a challenging code-switching task that many multilingual models perform poorly.
 
 These linguistic and resource-based challenges motivate the retrieval-augmented approach adopted in this research. By retrieving actual formal letter examples that demonstrate correct morphology, appropriate honorifics, and proper written register, the RAG system can ground the LLM's generation in concrete exemplars, compensating for its limited Sinhala training and helping bridge the gap between the model's predominantly informal Sinhala knowledge and the formal writing requirements of official correspondence.
 
@@ -1816,7 +1816,7 @@ This research demonstrates that retrieval-augmented generation is an effective a
 
 Table \ref{tab:appendix_evaluation_prompts} lists the 30 prompts used in the expert evaluation dataset.
 
-\begin{longtable}{@{}p{1.2cm}p{2.6cm}p{10.8cm}@{}}
+\begin{longtable}{@{}p{1.2cm}p{2.6cm}>{\sinhalafont\raggedright\arraybackslash}p{10.8cm}@{}}
 \caption{Evaluation prompt set}
 \label{tab:appendix_evaluation_prompts}\\
 \toprule
