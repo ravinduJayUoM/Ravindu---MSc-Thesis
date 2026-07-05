@@ -376,14 +376,14 @@ This chapter reviewed the landscape of Sinhala NLP and the techniques available 
 \begin{table}[h!]
 \centering
 \small
-\begin{tabularx}{\linewidth}{@{}p{2.5cm}Xp{3.8cm}p{3.8cm}@{}}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{2.5cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{3.8cm}>{\raggedright\arraybackslash}p{3.8cm}@{}}
 \toprule
 \textbf{Method} & \textbf{Description} & \textbf{Work done for low-resource languages other than Sinhala} & \textbf{Work done for Sinhala} \\
 \midrule
 Multilingual Pretraining and Cross-Lingual Transfer &
 Training multilingual models on multiple languages to transfer knowledge among languages. Improves NLP capabilities by shared representations. &
-Cahyawijaya et al. (2024): Few-shot cross-lingual learning (X-ICL) improved tasks in 25 languages. XLM-R strong in Sinhala text classification. &
-Multilingual models (FLAN-T5, XGLM) show basic Sinhala capabilities but are error-prone. \\
+Cahyawijaya et al. (2024): Few-shot cross-lingual learning (X-ICL) improved tasks in 25 languages. &
+XLM-R strong in Sinhala text classification. Multilingual models (FLAN-T5, XGLM) show basic Sinhala capabilities but are error-prone. \\
 \midrule
 Data Augmentation and Synthetic Data Generation &
 Artificially generating data (e.g., back-translation, error insertion, paraphrasing) to expand datasets and overcome data scarcity. &
