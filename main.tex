@@ -420,14 +420,14 @@ This section presents the research design, including the assumptions made during
 The statements mentioned below are assumed to be true by the researchers with regard to the research design.
 
 \begin{itemize}
-    \item The research design approach considered the government letters provided by the University of Moratuwa and the dataset created by the authors.
-    \item The users or the evaluators will provide prompts that contain at least the core intent of the letter, even if some supporting details are missing.
+    \item The research design approach considered government letters provided by the University of Moratuwa and the dataset created by the authors.
+    \item Users or evaluators will provide prompts that contain at least the core intent of the letter, even if some supporting details are missing.
     \item General-purpose multilingual LLMs contain partial knowledge of formal letter templates and Sinhala writing conventions, but this knowledge is insufficient for consistently producing structurally correct and contextually appropriate formal Sinhala letters without additional grounding.
     \item A curated Sinhala letter corpus can provide useful structural and stylistic examples that compensate for the limited Sinhala-specific knowledge available in general-purpose LLMs.
     \item Human expert evaluation is necessary for assessing grammar, formal register, cultural appropriateness, and structural correctness, as automated NLG metrics alone cannot reliably capture the quality of formal Sinhala writing.
 \end{itemize}
 
-The high-level architecture of the proposed research design approach is illustrated in Figure \ref{fig:3.1}
+The high-level architecture of the research design approach is illustrated in Figure \ref{fig:3.1}
 
 \begin{figure}[p]
     \centering
@@ -492,10 +492,10 @@ The dataset in this research was acquired through three approaches to ensure com
 The collected dataset was pre-processed to make it suitable for embedding, retrieval, and prompt construction. The goal of preprocessing was not to rewrite the letters, but to remove irrelevant noise, preserve useful formal writing patterns, and represent each document using a consistent schema.
 
 \subsection{Removing lengthy letters}
-The letter contents with more than 150 words were manually removed from the dataset. These texts were challenging to deal with and such letters made the model deviate from what was expected as output. Some of these lengthy letters included a copy of former letters sent, and forms to fill and name lists and their descriptions. 
+The letter contents with more than 150 words were manually removed from the dataset. These texts were challenging to deal with and such letters made the model deviate from what was expected as output. Some of these lengthy letters included a copy of former letters sent, forms to fill and name lists and their descriptions. 
 
 \subsection{Removing Non-Essential Components manually}
-The goal here was to maintain a standardized structure, to remove the personal details like addresses from the collected letters from institutions and personal contacts, and to remove the obvious components like Salutations and Closing remarks. The final contents of the CSV only had the subject and the main body of the letter, as illustrated in Figure \ref{fig:letter_transform}. Removed elements included the following.
+The goal here was to maintain a standardized structure, to remove the personal details such as addresses from the collected letters from institutions and personal contacts, and to remove the obvious components like Salutations and Closing remarks. The final contents of the CSV only had the subject and the main body of the letter, as illustrated in Figure \ref{fig:letter_transform}. Removed elements included the following.
 
 \begin{itemize}
     \item Sender Address
@@ -1337,7 +1337,7 @@ The first step parses the user's informal Sinhala prompt into a structured metad
 
 \subsection{Step 2: Gap Detection}
 
-The gap detection step validates the extracted metadata against a predefined set of required fields for each letter type. For example, an \textit{invitation} letter requires event date, time, and venue fields in addition to the standard recipient, sender, and purpose fields. If any required fields are missing, the system generates type-specific clarifying questions in Sinhala (e.g., \textit{"උත්සවය පැවැත්වෙන ස්ථානය කුමක්ද?"} for a missing venue field) and returns them to the user. The pipeline halts at this step until all required information is collected through the multi-turn dialogue.
+The gap detection step validates the extracted metadata against a predefined set of required fields for each letter type. For example, an \textit{invitation} letter requires event date, time, and venue fields in addition to the standard recipient, sender, and purpose fields. If any required fields are missing, the system generates type-specific clarifying questions in Sinhala (e.g., "උත්සවය පැවැත්වෙන ස්ථානය කුමක්ද?" for a missing venue field) and returns them to the user. The pipeline halts at this step until all required information is collected through the multi-turn dialogue.
 
 \subsection{Step 3: Document Retrieval}
 
