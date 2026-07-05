@@ -13,7 +13,7 @@
 
 \setmainfont{FreeSerif}
 \setsansfont{FreeSans}
-\setmonofont{FreeMono}
+\setmonofont{Consolas}
 
 % Define Sinhala font family
 \newfontfamily\sinhalafont{Noto Sans Sinhala}
@@ -1284,18 +1284,12 @@ The NER privacy module operates during corpus preparation (before embedding):
 
 \textbf{Code Implementation:}
 
-\begin{verbatim}
-def anonymize_entities(text: str, ner_model) -> str:
-    """Remove named entities for privacy preservation"""
-    entities = ner_model(text)
-    anonymized = text
-    for entity in sorted(entities, key=lambda e: e.start, reverse=True):
-        placeholder = f"<{entity.label.lower()}>"
-        anonymized = (anonymized[:entity.start] + 
-                     placeholder + 
-                     anonymized[entity.end:])
-    return anonymized
-\end{verbatim}
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/anonymize_entities.png}
+    \caption{Code implementation for entity anonymization}
+    \label{fig:impl_anonymize_entities}
+\end{figure}
 
 \subsubsection{Impact on Retrieval Quality}
 
