@@ -31,9 +31,9 @@
   breaklines=true
 }
 
-% Make verbatim blocks use Sinhala font
+% Make verbatim blocks use standard monospaced font to render English code clearly
 \makeatletter
-\def\verbatim@font{\normalfont\sinhalafont\small}
+\def\verbatim@font{\normalfont\ttfamily\small}
 \makeatother
 % Note: inputenc and fontenc are NOT needed with XeLaTeX (fontspec handles encoding)
 
@@ -986,13 +986,20 @@ Authentication is used to associate generated letters and feedback with register
 Table \ref{tab:api_endpoints} lists the major API endpoints used by the system. More details on the implementation are available in the project repository \cite{29}.
 
 
-\begin{table}[h!]
-\centering
 \small
-\begin{tabularx}{\linewidth}{@{}p{4.8cm}X@{}}
+\begin{longtable}{@{}p{4.5cm}p{10.1cm}@{}}
+\caption{Descriptions of API Endpoints in the RAG Pipeline}
+\label{tab:api_endpoints}\\
 \toprule
 \textbf{Endpoint} & \textbf{Description} \\
 \midrule
+\endfirsthead
+\toprule
+\textbf{Endpoint} & \textbf{Description} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
 \texttt{POST /auth/register} &
 Creates a new user account and stores profile details used during letter generation. \\
 \midrule
@@ -1035,10 +1042,7 @@ Returns a diagnostic report of the RAG pipeline, including document count, embed
 \texttt{/admin/*} &
 Provides administrator login, aggregate feedback statistics, letter-rating records, system-feedback records, and CSV export endpoints. \\
 \bottomrule
-\end{tabularx}
-\caption{Descriptions of API Endpoints in the RAG Pipeline}
-\label{tab:api_endpoints}
-\end{table}
+\end{longtable}
 
 \subsection{Request Flow}
 
@@ -1411,7 +1415,7 @@ Human evaluation is used as the primary assessment method because the quality of
 
 The evaluation dataset consists of 30 unseen letter prompts. The prompts are designed to cover the main formal letter categories considered in this research, including request, application, complaint, invitation, appreciation, recommendation, inquiry, transfer, leave, and other formal administrative letters. The final prompt set is kept separate from the retrieval corpus to avoid evaluating the system on prompts that are too close to indexed examples. Table \ref{tab:evaluation_prompt_distribution} shows the distribution of prompts across the formal letter categories, and the complete evaluation prompt set is provided in Appendix \ref{App:EvaluationPrompts}.
 
-\begin{table}[h!]
+\begin{table}[!htbp]
 \centering
 \small
 \begin{tabularx}{\linewidth}{@{}lccX@{}}
@@ -1451,7 +1455,7 @@ You are a Sinhala formal letter writing assistant. Write a complete formal lette
 
 In the RAG condition, the prompt is processed through the full proposed pipeline. The system extracts structured metadata, detects missing information, retrieves a relevant structure template and example letters from the FAISS knowledge base, builds an enhanced prompt, and then generates the final Sinhala formal letter. The generation model and temperature are kept the same as the baseline condition. Table \ref{tab:evaluation_generation_settings} summarises the generation settings shared by both conditions.
 
-\begin{table}[h!]
+\begin{table}[!htbp]
 \centering
 \small
 \begin{tabularx}{\linewidth}{@{}lX@{}}
@@ -1477,7 +1481,7 @@ Five Sinhala-proficient evaluators assessed the generated outputs. Each evaluato
 
 Each letter is rated independently using a five-point scale across the criteria shown in Table \ref{tab:evaluation_rubric}. In addition, evaluators provide a pairwise preference judgement by selecting which letter they would send in a real formal communication context.
 
-\begin{table}[h!]
+\begin{table}[!htbp]
 \centering
 \small
 \begin{tabularx}{\linewidth}{@{}p{3.5cm}X@{}}
@@ -1500,7 +1504,7 @@ Overall usability & Whether the letter could be used as-is or with only minor ed
 
 This section reports the completed expert evaluation results from the evaluator workbook. Letter A corresponds to the SinhalaLipi/RAG output and Letter B corresponds to the direct LLM baseline. For each metric, the mean and standard deviation are calculated across evaluators and prompts.
 
-\begin{table}[h!]
+\begin{table}[!htbp]
 \centering
 \small
 \begin{tabularx}{\linewidth}{@{}lccccX@{}}
@@ -1525,7 +1529,7 @@ The expert ratings show that the RAG-based SinhalaLipi output achieved higher me
 
 In addition to scoring each letter independently, evaluators indicate which of the two outputs they would choose to send. This provides a practical usability measure that complements the numeric rubric. The overall pairwise preferences are reported in Table \ref{tab:pairwise_preference_results}.
 
-\begin{table}[h!]
+\begin{table}[!htbp]
 \centering
 \small
 \begin{tabularx}{\linewidth}{@{}lccX@{}}
@@ -1543,10 +1547,10 @@ Tie & 0 & 0.0\% & No pairwise comparison was recorded as a tie. \\
 
 The pairwise preference results provide strong practical evidence in favour of the RAG pipeline. Out of 150 total preference judgements, evaluators preferred the SinhalaLipi/RAG output in 124 cases and the direct LLM baseline in 26 cases. Table \ref{tab:pairwise_preference_by_category} breaks down these preferences by letter category.
 
-\begin{table}[h!]
+\begin{table}[!htbp]
 \centering
 \small
-\begin{tabularx}{\linewidth}{@{}lcccX@{}}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{2.8cm}>{\centering\arraybackslash}p{2.2cm}>{\centering\arraybackslash}p{2.2cm}>{\centering\arraybackslash}p{1.0cm}>{\raggedright\arraybackslash}X@{}}
 \toprule
 \textbf{Category} & \textbf{RAG Preferred} & \textbf{Baseline Preferred} & \textbf{Tie} & \textbf{Observation} \\
 \midrule
@@ -1572,7 +1576,7 @@ The primary statistical comparison uses a paired design because each prompt prod
 
 To avoid treating the five evaluators' scores for the same prompt as independent observations, the tests in Table \ref{tab:statistical_results} are computed at the prompt level: the five evaluator scores are averaged per prompt, giving 30 paired observations ($n = 30$) for each metric. This conservative design ensures that the reported significance reflects agreement across prompts rather than an inflated count of non-independent rater--prompt pairs. The effect-size estimates are reported alongside the $p$-values so that the magnitude of each difference, rather than significance alone, guides interpretation.
 
-\begin{table}[h!]
+\begin{table}[!htbp]
 \centering
 \small
 \begin{tabularx}{\linewidth}{@{}lccccX@{}}
@@ -1597,7 +1601,7 @@ The statistical results show significant RAG improvements for every metric at $p
 
 Inter-rater reliability is calculated to determine the degree of agreement between evaluators. Krippendorff's alpha is used because it can handle ordinal ratings and multiple raters. The reliability values are reported per evaluation metric in Table \ref{tab:inter_rater_reliability}.
 
-\begin{table}[h!]
+\begin{table}[!htbp]
 \centering
 \small
 \begin{tabularx}{\linewidth}{@{}lccX@{}}
@@ -1624,7 +1628,7 @@ The inter-rater reliability values indicate substantial agreement for the more o
 
 The information extraction component is evaluated separately because extraction errors affect missing-field detection, retrieval, and final generation. A manually annotated subset of evaluation prompts is used as the gold standard. The extracted fields are compared against the expected fields for letter type, recipient, sender, subject, purpose, details, and invitation-specific event fields. Table \ref{tab:extraction_results} reports the extraction evaluation results for the NER-based, LLM-based, and hybrid strategies.
 
-\begin{table}[h!]
+\begin{table}[!htbp]
 \centering
 \small
 \begin{tabularx}{\linewidth}{@{}lcccX@{}}
@@ -1647,7 +1651,7 @@ The extraction evaluation results show that LLM-based extraction using Gemini 2.
 
 Retrieval is evaluated to determine whether the FAISS and LaBSE-based index retrieves useful Sinhala letter structures and examples for the extracted user intent. The retrieval results are assessed using category hit rate, template coverage, and precision at the top retrieved documents, and are reported in Table \ref{tab:retrieval_results}.
 
-\begin{table}[h!]
+\begin{table}[!htbp]
 \centering
 \small
 \begin{tabularx}{\linewidth}{@{}lccX@{}}
@@ -1682,7 +1686,7 @@ The letter ratings export and the system feedback export functions were tested b
 
 Navigation across the three primary admin views was verified to be functional: the overview statistics panel, the letter ratings panel, and the system feedback panel were each accessible and displayed their respective data without errors. Admin authentication and session management operated correctly throughout the evaluation period. Attempts to access admin-restricted endpoints using standard user credentials were confirmed to be rejected, verifying that role-based access control is enforced correctly. Table \ref{tab:admin_panel_evaluation} summarises the admin panel functional evaluation results.
 
-\begin{table}[h!]
+\begin{table}[!htbp]
 \centering
 \small
 \begin{tabularx}{\linewidth}{@{}p{4.5cm}p{2.5cm}X@{}}
@@ -1710,7 +1714,7 @@ The implemented system also collects user-facing feedback through the web interf
 
 The user feedback results are therefore reported as a usability evaluation of the implemented SinhalaLipi system. They are used to identify whether users found the system easy to use, whether the clarification questions helped them complete incomplete prompts, whether they trusted the generated letters, and whether they would use the system again. Table \ref{tab:user_feedback_participation} summarises participation in the pilot deployment, and Table \ref{tab:user_feedback_results} reports the letter-level and system-level feedback scores.
 
-\begin{table}[h!]
+\begin{table}[!htbp]
 \centering
 \small
 \begin{tabularx}{\linewidth}{@{}lccX@{}}
@@ -1727,7 +1731,7 @@ Evaluation period & November -- December 2025 & Study log & Four-week pilot depl
 \label{tab:user_feedback_participation}
 \end{table}
 
-\begin{table}[h!]
+\begin{table}[!htbp]
 \centering
 \small
 \begin{tabularx}{\linewidth}{@{}lccX@{}}
@@ -1757,7 +1761,7 @@ System-level usability scores were generally high. Ease of use (4.2) and willing
 
 The evaluator workbook did not contain free-text comments. Therefore, the qualitative error analysis is based on score patterns across the six rating dimensions and the pairwise preference results. The score differences indicate which aspects of letter quality were most affected by retrieval augmentation and which areas remained comparatively close between the two systems. Table \ref{tab:qualitative_error_analysis} summarises the resulting error-analysis themes.
 
-\begin{table}[h!]
+\begin{table}[!htbp]
 \centering
 \small
 \begin{tabularx}{\linewidth}{@{}p{3.5cm}p{3cm}X@{}}
