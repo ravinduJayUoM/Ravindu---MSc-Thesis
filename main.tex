@@ -15,10 +15,10 @@
 \setsansfont{FreeSans}
 \setmonofont{FreeMono}
 
-% Define Sinhala font family with Script=Sinhala constraint for correct complex text layout (CTL) rendering
-\newfontfamily\sinhalafont[Script=Sinhala]{Noto Sans Sinhala}
-\newfontfamily\sinhalafontsf[Script=Sinhala]{Noto Sans Sinhala}
-\newfontfamily\sinhalacodefont[Script=Sinhala,Path=./]{ISKPOTA.TTF}
+% Define Sinhala font family with Script=Sinhala and Scale=0.85 to visually match the English font x-heights
+\newfontfamily\sinhalafont[Script=Sinhala,Scale=0.85]{Noto Sans Sinhala}
+\newfontfamily\sinhalafontsf[Script=Sinhala,Scale=0.85]{Noto Sans Sinhala}
+\newfontfamily\sinhalacodefont[Script=Sinhala,Path=./,Scale=0.85]{ISKPOTA.TTF}
 
 % Convenience macro for inline Sinhala text — use \si{...} around all Sinhala characters
 % to ensure correct font rendering in the PDF output.
@@ -517,15 +517,15 @@ The goal here was to maintain a standardized structure, to remove the personal d
 All the dates and times were identified and replaced with placeholders <date> and <time> to avoid overfitting. 
 
 \subsubsection{Example} 
-Original: "මෙම ලිපිය 2022 මාර්තු 15 වැනි දා ලියන ලදී." 
-After replacement: "මෙම ලිපිය <date>  වැනි දා ලියන ලදී."
+Original: "\si{මෙම ලිපිය 2022 මාර්තු 15 වැනි දා ලියන ලදී.}" 
+After replacement: "\si{මෙම ලිපිය <date> වැනි දා ලියන ලදී.}"
 
 \subsection{Named Entity Recognition}
 As we collected actual letters from institutions and personal contacts, ensuring the privacy of these letters was important. Therefore, a Named Entity Recognition (NER) model was trained to detect and remove named entities from the main body of the letters. These identified named entities included names of people, institutions, and geographical locations.
 
 \subsubsection{Example}
-Original: "මා නිමල් පෙරේරා විසින් මහනුවර රිජන්සි පාසලට ලියන ලද ලිපියකි." 
-After NER and anonymization: "මා <NAME> විසින් ලියන ලද ලිපියකි."
+Original: "\si{මා නිමල් පෙරේරා විසින් මහනුවර රිජන්සි පාසලට ලියන ලද ලිපියකි.}" 
+After NER and anonymization: "\si{මා <NAME> විසින් ලියන ලද ලිපියකි.}"
 
 After cleaning and anonymization, each document was represented using a structured CSV schema containing a unique identifier, letter category, document type, register level, language, source, title, content, tags, and rating. The corpus contains both complete letter examples and structure templates so that retrieval can provide the LLM with both content-level examples and format-level guidance.
 
