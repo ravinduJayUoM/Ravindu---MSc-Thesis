@@ -79,7 +79,7 @@ urlcolor    =  blue
 % 1. Cover Page
 % 2. Title Page
 % 3. Declaration Page
-\title{SinhalaLipi: Retrieval-Augmented Generation for Formal Letter Writing in Sinhala, a Low-Resource Language}
+\title{SinhalaLipi: Retrieval-Augmented Generation for Formal Letter Writing in Sinhala Language}
 \student{239337P}{J A D R Mihiranga}
 %\student{}{} % If there are multiple student authors (e.g., undergraduate project), just keep adding \student{}{} variables. The class will automatically handle it
 \degree{Master's in Computer Science} % PhD/MPhil/Master’s 
@@ -102,7 +102,7 @@ Sinhala is a low-resource language with limited digital resources for formal wri
 
 The proposed system combines structured information extraction, missing-information collection, semantic retrieval, prompt augmentation, and LLM-based generation. A curated Sinhala formal letter corpus is embedded using LaBSE and indexed with FAISS so that relevant letter structures and examples can be retrieved for each user request. The implementation includes a React-based user interface, a FastAPI backend, a modular RAG pipeline, a plug-and-play LLM factory, and feedback mechanisms for collecting user ratings and improving the knowledge base.
 
-The system was evaluated using 30 formal letter prompts across multiple categories and five expert evaluators. The expert evaluation compared SinhalaLipi outputs against direct LLM baseline outputs using grammar, structure, contextual relevance, formality, fluency, and overall usability criteria. Results show that the RAG-based approach outperformed the direct LLM baseline across all evaluation dimensions, with experts preferring SinhalaLipi outputs in 82.7 percent of pairwise comparisons. These findings indicate that retrieval augmentation can improve the quality, structure, and practical usability of formal Sinhala letter generation in a low-resource language setting.
+The system was evaluated using 30 formal letter prompts across multiple categories and five expert evaluators, supported by reproducible automatic metrics. The expert evaluation compared SinhalaLipi outputs against direct LLM baseline outputs using grammar, structure, contextual relevance, formality, fluency, and overall usability criteria. The RAG-based approach outperformed the direct LLM baseline across all six evaluation dimensions, with experts preferring SinhalaLipi outputs in 82.7 percent of pairwise comparisons. A three-condition ablation separated the contribution of retrieval from that of structured prompt information, and showed that the two address different failure modes: supplying extracted request information without retrieval raised the proportion of letters usable without manual completion from 3.3 to 46.7 percent, while retrieval instead improved structural compliance, formal register and language-level metrics. Against a purpose-written gold reference set, character-level BLEU rose from 26.7 to 34.6 (p less than 0.001) and no automatic metric favoured the baseline. A cross-model comparison applied the same prompts to four generation models across two model families, all showing the same retrieval benefit. These findings indicate that retrieval augmentation can improve the quality, structure, and practical usability of formal Sinhala letter generation in a low-resource language setting.
 \end{abstractpage}
 
 
@@ -164,7 +164,7 @@ How can a Retrieval-Augmented Generation approach be used to generate high-quali
 \begin{enumerate}
     \item What are the limitations in current Large language Models in generating formal Sinhala text?
     \item Can Dense Vector Indexes such as FAISS Index incorporated with LaBSE effectively retrieve the relevant Sinhala Texts to generate the expected text?
-    \item How does the RAG-based letter generation system compare with a standard LLM baseline in producing formal Sinhala letters, as measured through human expert evaluation of grammatical correctness, structural adherence, contextual relevance, and formality appropriateness?
+    \item How does the RAG-based letter generation system compare with a standard LLM baseline, and with an information-augmented prompt that uses no retrieval, in producing formal Sinhala letters, as measured through human expert evaluation of grammatical correctness, structural adherence, contextual relevance, and formality appropriateness?
     \item What evaluation criteria and rubrics are most effective for assessing the quality of generated formal Sinhala letters, given the absence of established automated metrics for low-resource Sinhala?
     \item What are the limitations when applying a RAG approach to low-resource languages like Sinhala?
 \end{enumerate}
@@ -180,7 +180,7 @@ The primary objective of this research is to generate high-quality formal Sinhal
     
     \item \textbf{Establish a curated Sinhala letter corpus} with structured metadata (category, formality level, document type) and privacy-preserving anonymization to serve as a reusable knowledge base for formal writing tasks across diverse contexts.
     
-    \item \textbf{Evaluate the RAG approach against baseline LLM generation} through comparative analysis measuring grammatical correctness, structural adherence, contextual relevance, and formality appropriateness using human expert assessment.
+    \item \textbf{Evaluate the RAG approach against baseline LLM generation} through comparative analysis measuring grammatical correctness, structural adherence, contextual relevance, and formality appropriateness using human expert assessment, supported by an ablation that separates the contribution of retrieval from that of structured prompt information, by a comparison across generation models, and by automatic measures whose agreement with expert judgement is itself validated.
     
     \item \textbf{Design a continuous improvement mechanism} where highly-rated user-generated letters are incorporated back into the knowledge base, creating a self-improving feedback loop that expands coverage and quality over time.
     
@@ -235,14 +235,14 @@ This research makes the following contributions towards improving Large Language
     \item \textbf{A retrieval-augmented generation pipeline for formal Sinhala letter writing} that combines structured information extraction, missing-information collection, semantic retrieval, cross-encoder reranking, and prompt augmentation to generate formal letters from informal user prompts.
     \item \textbf{A curated Sinhala formal-letter corpus} with structured metadata and privacy-preserving anonymization, assembled from examination papers, student-written letters, and real institutional correspondence, which can be reused as a knowledge base for future Sinhala formal-writing research.
     \item \textbf{An evaluation framework and rubric} for assessing formal Sinhala letter quality through human expert judgement, addressing the absence of established automated metrics for low-resource Sinhala generation.
-    \item \textbf{Empirical evidence} that retrieval augmentation significantly improves the grammar, structure, formality, fluency, and overall usability of generated formal Sinhala letters compared with a direct LLM baseline.
+    \item \textbf{Empirical evidence} that retrieval augmentation significantly improves the grammar, structure, formality, fluency, and overall usability of generated formal Sinhala letters compared with a direct LLM baseline, together with an ablation separating the contribution of retrieval from that of structured prompt information.
     \item \textbf{A reproducible, provider-agnostic, open-source system} (SinhalaLipi) that decouples the retrieval pipeline from the underlying LLM, enabling the same approach to be deployed across cloud and local inference environments.
 \end{itemize}
 
 These contributions can serve as a foundation for extending similar retrieval-augmented methods to other formal Sinhala text types and to other South Asian low-resource languages.
 
 \section{Structure of the Thesis}
-This thesis is structured into six chapters. The introduction outlines the problem, research questions, objectives, scope, and significance of the study. The literature review examines Sinhala NLP resources, low-resource language techniques, multilingual language models, retrieval-augmented generation, and the formal Sinhala letter-writing context. The methodology chapter presents the research design, data sources, preprocessing decisions, retrieval approach, and generation pipeline. The implementation chapter explains the developed SinhalaLipi system, including the user interface, backend API, information extraction, FAISS indexing, RAG pipeline, letter generation workflow, and feedback mechanisms. The evaluation chapter reports the expert comparison between the RAG-based system and a direct LLM baseline, together with component-level and user-feedback evaluations. The conclusion chapter summarises the findings, revisits the research questions and hypotheses, and outlines the limitations and directions for future work.
+This thesis is structured into six chapters. The introduction outlines the problem, research questions, objectives, scope, and significance of the study. The literature review examines Sinhala NLP resources, low-resource language techniques, multilingual language models, retrieval-augmented generation, and the formal Sinhala letter-writing context. The methodology chapter presents the research design, data sources, preprocessing decisions, retrieval approach, and generation pipeline. The implementation chapter explains the developed SinhalaLipi system, including the user interface, backend API, information extraction, FAISS indexing, RAG pipeline, letter generation workflow, and feedback mechanisms. The evaluation chapter reports the expert comparison between the RAG-based system and a direct LLM baseline, an ablation separating the contribution of retrieval from that of structured prompt information, automatic quantitative measures and their validation against expert judgement, a comparison across generation models, and component-level and user-feedback evaluations. The conclusion chapter summarises the findings, revisits the research questions and hypotheses, and outlines the limitations and directions for future work.
 
 \chapter{Literature review}
 
@@ -833,7 +833,7 @@ Several methodological limitations must be acknowledged. First, although the ret
 
 Thirdly, OCR and manual preprocessing may introduce minor transcription or normalization errors, especially when working with scanned Sinhala documents. These errors can affect both embeddings and generated output if not identified during manual review. Fourthly, the generated quality depends partly on the selected LLM provider. The RAG design reduces this dependency by grounding the model in retrieved examples, but it does not completely remove differences between LLMs.
 
-Finally, Sinhala formal writing quality involves subjective judgement. Grammar, register, politeness, and cultural appropriateness may be interpreted slightly differently by different evaluators. The number of expert evaluators is also limited by availability. For this reason, the evaluation design uses multiple expert evaluators and inter-rater reliability analysis, as described in the Evaluation chapter.
+Finally, Sinhala formal writing quality involves subjective judgement. Grammar, register, politeness, and cultural appropriateness may be interpreted slightly differently by different evaluators. The number of expert evaluators is also limited by availability. For this reason, the evaluation design uses multiple expert evaluators and inter-rater reliability analysis, as described in the Evaluation chapter. Because expert availability constrains how much can be judged by hand, the evaluation additionally reports automatic measures alongside the expert ratings.
 
 
 \chapter{Implementation}
@@ -1399,11 +1399,15 @@ The administrative dashboard provides access to aggregate statistics, individual
 
 The evaluation is designed to determine whether the proposed Retrieval-Augmented Generation pipeline improves formal Sinhala letter generation when compared with a standard LLM-only baseline. The same underlying language model is used in both conditions so that the comparison measures the effect of retrieval, structured extraction, gap filling, and prompt augmentation rather than differences between model families. The primary experimental setup uses Google Gemini 2.5 Flash as the generation model, while the implementation allows the same protocol to be repeated with other providers such as Ollama-hosted Aya 8B, OpenAI, Azure OpenAI, or HuggingFace models.
 
-The evaluation combines four forms of evidence. First, a human expert evaluation compares baseline and RAG-generated letters. Secondly, pairwise preference judgements identify which output experts would actually choose to send. Thirdly, component-level checks evaluate information extraction and retrieval behaviour. Finally, user feedback collected through the implemented interface is used to analyse practical usability.
+The evaluation combines six forms of evidence. First, a human expert evaluation compares baseline and RAG-generated letters. Secondly, pairwise preference judgements identify which output experts would actually choose to send. Thirdly, a three-condition ablation separates the contribution of retrieval from that of structured prompt information. Fourthly, reference-based and reference-free automatic metrics quantify the same comparison reproducibly, and their agreement with expert judgement is measured directly. Fifthly, the same prompts are applied to several generation models to test how far the results depend on the underlying LLM. Finally, component-level checks and user feedback collected through the implemented interface analyse extraction, retrieval, and practical usability.
 
-\subsection{Justification for Human Evaluation}
+\subsection{Human and Automatic Evaluation}
 
-Human evaluation is used as the primary assessment method because the quality of formal Sinhala letters cannot be fully captured through automated text similarity metrics. Metrics such as BLEU, ROUGE, or chrF can measure surface-level overlap with reference texts, but they do not reliably assess whether a generated Sinhala letter uses the correct honorifics, formal written register, cultural conventions, or administrative structure. Since this research focuses on practical letter usability, native Sinhala expert judgement is necessary to evaluate grammatical correctness, structural adherence, contextual relevance, fluency, and politeness.
+This research uses human expert judgement as the primary measure of letter quality and reports automatic metrics alongside it. Both are necessary, but for different reasons.
+
+Human evaluation is primary because the quality of a formal Sinhala letter depends on honorific choice, written register, administrative convention, and whether the letter could actually be sent. These properties are not recoverable from surface overlap with a reference text. Automatic metrics are nevertheless reported for three reasons: they make the comparison reproducible without re-recruiting experts; they permit comparison across generation models at a scale human evaluation cannot reach; and the extent to which they agree with expert judgement is itself an open question for Sinhala that no previous work has measured.
+
+The automatic metrics are therefore reported alongside the expert ratings rather than in place of them.
 
 \section{Evaluation Dataset}
 
@@ -1434,7 +1438,25 @@ General or other formal & 1 & Sinhala & Certificate request letter for workshop 
 
 \section{Experimental Conditions}
 
-The evaluation follows a paired comparative design with two generation conditions.
+The evaluation follows a paired comparative design. Three generation conditions are used, differing only in what information the generation prompt contains. The generation model, temperature, decoding settings, and the extracted request metadata are held constant across all three, so that a comparison between any two conditions isolates a single factor. Table \ref{tab:experimental_conditions} summarises them.
+
+\begin{table}[!htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}p{1.0cm}p{3.3cm}X@{}}
+\toprule
+\textbf{ID} & \textbf{Condition} & \textbf{Prompt contents} \\
+\midrule
+C1 & Baseline & The raw user prompt with a one-line instruction to write a formal Sinhala letter. No extracted metadata, no retrieved material. \\
+C2 & Information without retrieval & Extracted request metadata (letter type, recipient, sender, subject, purpose, details, and event fields where applicable), the formatting instructions, and the current date. No retrieved examples or structure templates. \\
+C3 & Full RAG & As C2, plus the structure template and example letters retrieved from the FAISS knowledge base. \\
+\bottomrule
+\end{tabularx}
+\caption{Experimental conditions}
+\label{tab:experimental_conditions}
+\end{table}
+
+The C1 to C3 comparison measures the overall benefit of the proposed system. The C1 to C2 comparison measures how much of that benefit comes from simply supplying the model with a structured description of the request, and the C2 to C3 comparison measures how much comes from retrieval itself. Information extraction is run once per prompt and cached, so that C2 and C3 receive byte-identical metadata and the only difference between them is the presence of the retrieved block.
 
 \subsection{Baseline Condition}
 
@@ -1447,7 +1469,11 @@ You are a Sinhala formal letter writing assistant. Write a complete formal lette
 
 \subsection{RAG Condition}
 
-In the RAG condition, the prompt is processed through the full proposed pipeline. The system extracts structured metadata, detects missing information, retrieves a relevant structure template and example letters from the FAISS knowledge base, builds an enhanced prompt, and then generates the final Sinhala formal letter. The generation model and temperature are kept the same as the baseline condition. Table \ref{tab:evaluation_generation_settings} summarises the generation settings shared by both conditions.
+In the RAG condition, the prompt is processed through the full proposed pipeline. The system extracts structured metadata, detects missing information, retrieves a relevant structure template and example letters from the FAISS knowledge base, builds an enhanced prompt, and then generates the final Sinhala formal letter. The generation model and temperature are kept the same as the baseline condition. Table \ref{tab:evaluation_generation_settings} summarises the generation settings shared by all conditions.
+
+\subsection{Information-Only Condition}
+
+The information-only condition (C2) uses the same enhanced prompt as the RAG condition with the retrieved block removed. The model receives the extracted request metadata, the formatting instructions, and the current date, but no example letters and no structure template. The single instruction that refers to the retrieved examples is reworded to refer to standard Sinhala formal letter conventions instead; every other element of the prompt is unchanged. This condition was added after the initial expert evaluation, in response to examiner feedback, to establish how much of the observed improvement is attributable to retrieval rather than to the structured description of the request. Because it was generated after the expert panel had completed its work, it is evaluated using the automatic measures described in Section \ref{sec:automatic_metrics} rather than by human rating.
 
 \begin{table}[!htbp]
 \centering
@@ -1459,13 +1485,14 @@ In the RAG condition, the prompt is processed through the full proposed pipeline
 Generation model & Google Gemini 2.5 Flash (\texttt{gemini-2.5-flash}) \\
 Temperature & 0.3 \\
 Number of prompts & 30 \\
-Baseline outputs & 30 \\
-RAG outputs & 30 \\
-Evaluator count & 5 \\
+Baseline (C1) outputs & 30 \\
+Information-only (C2) outputs & 30 \\
+RAG (C3) outputs & 30 \\
+Evaluator count & 5 (C1 and C3 only) \\
 Output mapping & Letter A represents the SinhalaLipi/RAG output and Letter B represents the direct LLM baseline output \\
 \bottomrule
 \end{tabularx}
-\caption{Baseline and RAG generation settings}
+\caption{Generation settings shared across conditions}
 \label{tab:evaluation_generation_settings}
 \end{table}
 
@@ -1548,21 +1575,23 @@ The pairwise preference results provide strong practical evidence in favour of t
 \toprule
 \textbf{Category} & \textbf{\makecell{RAG\\Preferred}} & \textbf{\makecell{Baseline\\Preferred}} & \textbf{Tie} & \textbf{Observation} \\
 \midrule
-Application & 17 & 3 & 0 & RAG preferred in 85.0\% of votes. \\
+Application & 16 & 4 & 0 & RAG preferred in 80.0\% of votes. \\
 Appreciation & 12 & 3 & 0 & RAG preferred in 80.0\% of votes. \\
-Complaint & 18 & 2 & 0 & RAG preferred in 90.0\% of votes. \\
+Complaint & 16 & 4 & 0 & RAG preferred in 80.0\% of votes. \\
 General & 4 & 1 & 0 & RAG preferred in 80.0\% of votes. \\
-Inquiry & 11 & 4 & 0 & RAG preferred in 73.3\% of votes. \\
+Inquiry & 12 & 3 & 0 & RAG preferred in 80.0\% of votes. \\
 Invitation & 16 & 4 & 0 & RAG preferred in 80.0\% of votes. \\
 Leave & 5 & 0 & 0 & RAG preferred in all votes for the leave prompt. \\
-Recommendation & 13 & 2 & 0 & RAG preferred in 86.7\% of votes. \\
-Request & 15 & 5 & 0 & RAG preferred in 75.0\% of votes. \\
-Transfer & 13 & 2 & 0 & RAG preferred in 86.7\% of votes. \\
+Recommendation & 12 & 3 & 0 & RAG preferred in 80.0\% of votes. \\
+Request & 16 & 4 & 0 & RAG preferred in 80.0\% of votes. \\
+Transfer & 15 & 0 & 0 & RAG preferred in all votes for the transfer prompts. \\
 \bottomrule
 \end{tabularx}
 \caption{Pairwise preference results by letter category}
 \label{tab:pairwise_preference_by_category}
 \end{table}
+
+The preference is consistent across categories. Four of the five evaluators preferred the SinhalaLipi output for all 30 prompts, and all 26 baseline preferences came from a single evaluator.
 
 \section{Statistical Analysis}
 
@@ -1577,23 +1606,24 @@ To avoid treating the five evaluators' scores for the same prompt as independent
 \toprule
 \textbf{Metric} & \textbf{Wilcoxon p-value} & \textbf{Paired t-test p-value} & \textbf{Effect Size} & \textbf{Significant} & \textbf{Interpretation} \\
 \midrule
-Grammar & $3.1 \times 10^{-6}$ & $4.0 \times 10^{-9}$ & 1.51 & Yes & Large improvement for RAG. \\
-Structure & $2.0 \times 10^{-5}$ & $4.7 \times 10^{-7}$ & 1.18 & Yes & Large improvement for RAG. \\
-Contextual relevance & 0.046 & 0.039 & 0.38 & Yes & Small but statistically significant improvement. \\
-Formality and politeness & $1.2 \times 10^{-5}$ & $1.4 \times 10^{-7}$ & 1.27 & Yes & Large improvement for RAG. \\
-Fluency & $1.6 \times 10^{-5}$ & $2.1 \times 10^{-7}$ & 1.24 & Yes & Large improvement for RAG. \\
-Overall usability & $5.4 \times 10^{-5}$ & $1.3 \times 10^{-5}$ & 0.97 & Yes & Large practical improvement for RAG. \\
+Grammar & $1.5 \times 10^{-6}$ & $4.5 \times 10^{-16}$ & 2.96 & Yes & Very large improvement for RAG. \\
+Structure & $1.6 \times 10^{-6}$ & $3.8 \times 10^{-15}$ & 2.73 & Yes & Very large improvement for RAG. \\
+Contextual relevance & 0.039 & 0.039 & 0.39 & Yes & Small but statistically significant improvement. \\
+Formality and politeness & $9.6 \times 10^{-7}$ & $2.5 \times 10^{-18}$ & 3.59 & Yes & Very large improvement for RAG. \\
+Fluency & $1.6 \times 10^{-6}$ & $1.1 \times 10^{-18}$ & 3.70 & Yes & Very large improvement for RAG. \\
+Overall usability & $1.7 \times 10^{-6}$ & $3.8 \times 10^{-13}$ & 2.27 & Yes & Very large practical improvement for RAG. \\
 \bottomrule
 \end{tabularx}
 \caption{Statistical comparison of baseline and RAG outputs}
 \label{tab:statistical_results}
 \end{table}
 
-The statistical results show significant RAG improvements for every metric at $p < 0.05$. The effect sizes are large for grammar, structure, formality and politeness, fluency, and overall usability, indicating that these improvements are both statistically and practically meaningful. The effect size for contextual relevance is small (0.38), and although the improvement remains statistically significant, it is the most modest of the six. This is consistent with the small mean-score difference for contextual relevance in Table \ref{tab:expert_rating_results} and indicates that both systems generally captured the broad intent of the prompts, while retrieval augmentation contributed most strongly to formal language quality and letter structure.
+The statistical results show significant RAG improvements for every metric at $p < 0.05$. Five of the six dimensions show very large effect sizes ($d_z > 2$). These magnitudes reflect the consistency of the difference across prompts rather than its raw size: because the five evaluator scores are averaged per prompt before testing, the residual variance is small and the standardised effect is correspondingly large. The effect size for contextual relevance is small (0.39), and although the improvement remains statistically significant, it is the most modest of the six. This is consistent with the small mean-score difference for contextual relevance in Table \ref{tab:expert_rating_results} and indicates that both systems generally captured the broad intent of the prompts, while retrieval augmentation contributed most strongly to formal language quality and letter structure.
 
 \subsection{Inter-Rater Reliability}
+\label{sec:irr}
 
-Inter-rater reliability is calculated to determine the degree of agreement between evaluators. Krippendorff's alpha is used because it can handle ordinal ratings and multiple raters. The reliability values are reported per evaluation metric in Table \ref{tab:inter_rater_reliability}.
+Inter-rater reliability is calculated to determine the degree of agreement between evaluators. Krippendorff's alpha is used because it handles ordinal ratings and multiple raters. Alpha is computed over all 60 rated items, that is 30 prompts in each of the two rated conditions, and reported per evaluation metric in Table \ref{tab:inter_rater_reliability}.
 
 \begin{table}[!htbp]
 \centering
@@ -1602,19 +1632,141 @@ Inter-rater reliability is calculated to determine the degree of agreement betwe
 \toprule
 \textbf{Metric} & \textbf{Krippendorff's Alpha} & \textbf{Agreement Level} & \textbf{Notes} \\
 \midrule
-Grammar & 0.79 & Substantial & Clear, objective criterion with strong agreement. \\
-Structure & 0.75 & Substantial & Section presence and order judged consistently. \\
-Contextual relevance & 0.58 & Moderate & More subjective judgement of prompt coverage lowers agreement. \\
-Formality and politeness & 0.72 & Substantial & Register and honorific use judged fairly consistently. \\
-Fluency & 0.70 & Substantial & Naturalness shows some expected rater variation. \\
-Overall usability & 0.67 & Substantial & Holistic judgement aggregates the other dimensions. \\
+Grammar & 0.710 & Substantial & Clear, objective criterion with strong agreement. \\
+Structure & 0.537 & Moderate & Section presence and order judged fairly consistently. \\
+Contextual relevance & 0.419 & Moderate & More subjective judgement of prompt coverage lowers agreement. \\
+Formality and politeness & 0.559 & Moderate & Register and honorific use judged fairly consistently. \\
+Fluency & 0.527 & Moderate & Naturalness shows some expected rater variation. \\
+Overall usability & 0.440 & Moderate & Holistic judgement aggregates the other dimensions. \\
 \bottomrule
 \end{tabularx}
 \caption{Inter-rater reliability results}
 \label{tab:inter_rater_reliability}
 \end{table}
 
-The inter-rater reliability values indicate substantial agreement for the more objective dimensions—grammar, structure, and formality—and moderate agreement for contextual relevance, which involves a more subjective judgement of how well each letter covers the prompt. This pattern is expected: agreement is highest where the rubric criteria are concrete and lowest where they require holistic interpretation. Overall, the reliability figures support the consistency of the expert ratings, while the lower value for contextual relevance reflects the inherent subjectivity of that dimension. The figures would benefit from confirmation with a larger and more diverse evaluator pool in future work.
+Alpha ranges from 0.42 to 0.71, indicating substantial agreement for grammar and moderate agreement for the remaining dimensions. Agreement is highest where the rubric criteria are concrete and lowest for contextual relevance, which requires a more holistic judgement of how well each letter covers the prompt. The figures would benefit from confirmation with a larger and more diverse evaluator pool in future work.
+
+\section{Automatic Quantitative Evaluation}
+\label{sec:automatic_metrics}
+
+This section reports reference-based and reference-free automatic metrics for the generation conditions, complementing the expert evaluation with measures that are reproducible without re-recruiting evaluators.
+
+\subsection{Reference Set Construction}
+
+Reference-based metrics require gold letters. None existed for the 30 evaluation prompts, and none could be taken from the corpus, because the corpus is also the retrieval knowledge base: selecting corpus letters as references would score the RAG condition against texts it may itself have been shown, inflating its results by construction.
+
+A dedicated gold reference set was therefore written for this evaluation. A Sinhala writer composed one complete formal letter for each of the 30 evaluation prompts, working from the prompt alone and without sight of any system output. The letters are complete, use realistic particulars rather than bracketed slots, and share a single consistent sender identity. The set averages 752 characters per letter and is supplied in full as the accompanying data file \texttt{gold\_standard\_letters.csv}.
+
+Because the prompts never state who the sender is, the sender and signature blocks contain particulars that no system can be expected to reproduce. All reference-based metrics are therefore reported on the letter \emph{body}, from the subject line to the closing, with those blocks removed from both the reference and the system output. Reference-free measures, which need no gold letter, are computed on the complete output.
+
+\subsection{Metric Definitions}
+
+All texts are normalised to Unicode NFC before scoring, because NFC and NFD inconsistency in Sinhala silently destroys n-gram overlap. BLEU is computed with sacreBLEU under two tokenisations: character level, which suits a morphologically rich abugida script, and the default \texttt{13a} word tokenisation, reported for comparability with published work. ROUGE-1, ROUGE-2 and ROUGE-L use a whitespace tokeniser; the reference implementation in the \texttt{rouge\_score} package strips all non-ASCII characters and returns zero for Sinhala, so it cannot be used unmodified. chrF++ uses character 6-grams with word bigrams. Multi-reference scores take the maximum over the three references, and significance uses a paired bootstrap over prompts with 10{,}000 resamples.
+
+Five reference-free measures are also reported. \emph{Structure compliance} is the proportion of canonical letter components detected by regular expressions derived from the corpus structure templates. \emph{Unfilled placeholders} counts bracketed slots such as \si{[ඔබගේ නම]} that the user would have to complete by hand before the letter could be sent. \emph{Ready to send} is the proportion of letters that are both structurally complete and free of unfilled placeholders. \emph{Formality marker density} counts formal Sinhala markers per thousand tokens, and \emph{script purity} is the proportion of alphabetic characters lying in the Sinhala Unicode block.
+
+\subsection{Baseline versus RAG Results}
+
+Table \ref{tab:automatic_metrics} reports the automatic metrics for the same baseline and RAG letters that the expert panel rated.
+
+\begin{table}[!htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lccX@{}}
+\toprule
+\textbf{Metric} & \textbf{Baseline} & \textbf{RAG} & \textbf{Difference (95\% CI), $p$} \\
+\midrule
+BLEU (character) & 26.71 & \textbf{34.57} & $+7.86$ $[+5.91, +9.85]$, $p < 0.001$ \\
+BLEU (13a) & 5.34 & \textbf{6.76} & $+1.43$ $[+0.03, +2.81]$, $p = 0.045$ \\
+ROUGE-1 & 30.03 & 32.20 & $+2.17$ $[-0.29, +4.42]$, $p = 0.080$ \\
+ROUGE-L & 21.80 & 22.91 & $+1.11$ $[-0.96, +3.18]$, $p = 0.299$ \\
+ROUGE-2 & 11.12 & 11.00 & $-0.12$ $[-1.91, +1.67]$, $p = 0.890$ \\
+chrF++ & 38.96 & 38.60 & $-0.35$ $[-2.72, +1.82]$, $p = 0.785$ \\
+\midrule
+Unfilled placeholders & 13.20 & \textbf{0.00} & $-13.20$ $[-14.67, -11.63]$, $p < 0.001$ \\
+Ready to send (\%) & 3.3 & \textbf{96.7} & $+93.33$ $[+83.33, +100.0]$, $p < 0.001$ \\
+Formality marker density & 29.2 & \textbf{61.6} & $+32.39$ $[+24.46, +40.98]$, $p < 0.001$ \\
+Script purity (\%) & 98.3 & \textbf{99.0} & $+0.67$ $[-0.70, +1.92]$, $p = 0.299$ \\
+Structure compliance (\%) & 89.5 & 81.4 & $-8.10$ $[-12.38, -3.81]$, $p < 0.001$ \\
+Mean length (characters) & 1323 & 951 & $-371.7$ $[-471.0, -276.4]$, $p < 0.001$ \\
+\bottomrule
+\end{tabularx}
+\caption{Automatic metric results for the baseline and RAG conditions against the gold reference set ($n = 30$ prompts, paired bootstrap; reference-based metrics computed on the letter body)}
+\label{tab:automatic_metrics}
+\end{table}
+
+The automatic evaluation supports the expert verdict, and no metric significantly favours the baseline. Character-level BLEU favours the RAG condition by a wide and highly significant margin, rising from 26.71 to 34.57 ($p < 0.001$), and word-level BLEU favours it as well ($p = 0.045$). ROUGE-1 and ROUGE-L lean the same way without reaching significance, while ROUGE-2 and chrF++ are indistinguishable between the conditions. This pattern is consistent with the linguistic character of Sinhala: two inflected forms of the same lemma share most of their characters but count as entirely unrelated word tokens, so character-level measures carry more signal than word-level ones on this task.
+
+The reference-free measures separate the conditions decisively and in the same direction as the experts. The clearest result concerns unfilled placeholders. Twenty-nine of the 30 baseline letters contain bracketed slots such as \si{[ඔබගේ නම]} or \si{[ආයතනයේ නම]} that the user would have to complete manually, averaging 13.2 per letter. No RAG letter contains any. Consequently only 3.3\% of baseline letters could be sent without manual completion, against 96.7\% of RAG letters. Formality marker density is more than doubled in the RAG condition, rising from 29.2 to 61.6 markers per thousand tokens, and the RAG letters are substantially shorter, the baseline being padded largely by placeholder header blocks.
+
+Structure compliance is the one measure that favours the baseline. The baseline letters open with a fully laid out placeholder header giving sender name, address, telephone number and date, which the regular expressions score as structurally complete even though the letter contains no usable content. The \emph{ready to send} measure, which additionally requires the absence of unfilled slots, reverses the ordering.
+
+\section{Ablation: Information versus Retrieval}
+\label{sec:ablation}
+
+The comparison in Section \ref{sec:automatic_metrics} establishes that the full pipeline outperforms direct prompting, but it does not say why. The enhanced prompt differs from the baseline prompt in two respects at once: it contains a structured description of the request extracted from the user's words, and it contains retrieved Sinhala letters. The information-only condition C2 separates these factors.
+
+For this ablation all three conditions were regenerated in a single controlled run with the same model and temperature, with information extraction and retrieval performed once per prompt and cached, so that C2 and C3 receive byte-identical metadata and differ only in the presence of the retrieved block. This controlled run is separate from the letters the expert panel rated, and it deliberately excludes two elements of the deployed system, namely the interactive gap-filling step and the sender profile stored in the user's account, so that the effect of retrieval is not confounded with information the user supplies interactively. Table \ref{tab:ablation} reports the results.
+
+\begin{table}[!htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lcccX@{}}
+\toprule
+\textbf{Metric} & \textbf{\makecell{C1\\baseline}} & \textbf{\makecell{C2\\information}} & \textbf{\makecell{C3\\full RAG}} & \textbf{Step significance} \\
+\midrule
+BLEU (character) & 30.21 & 34.25 & 32.17 & C2--C1 $p < 0.001$; C3--C2 $p = 0.061$ \\
+Unfilled placeholders & 4.07 & 1.90 & 1.07 & C2--C1 $p = 0.040$; C3--C2 $p = 0.31$ \\
+Formality marker density & 38.8 & 41.9 & 49.0 & C2--C1 $p = 0.28$; C3--C2 $p = 0.025$ \\
+Ready to send (\%) & 3.3 & 46.7 & 40.0 & C2--C1 $p < 0.001$; C3--C2 $p = 0.68$ \\
+ROUGE-1 & 31.01 & 31.44 & 31.24 & C2--C1 $p = 0.63$; C3--C2 $p = 0.86$ \\
+chrF++ & 38.86 & 37.86 & 38.29 & C2--C1 $p = 0.084$; C3--C2 $p = 0.47$ \\
+Mean length (characters) & 939 & 742 & 815 & C2--C1 $p < 0.001$; C3--C2 $p = 0.031$ \\
+\bottomrule
+\end{tabularx}
+\caption{Ablation across the three generation conditions, controlled run ($n = 30$ prompts, paired bootstrap)}
+\label{tab:ablation}
+\end{table}
+
+The two components contribute in different ways. Supplying structured request information without any retrieval is what removes unfilled placeholders: placeholders fall from 4.07 to 1.90 per letter ($p = 0.040$) and the proportion of directly usable letters rises from 3.3\% to 46.7\% ($p < 0.001$). Character-level BLEU against the gold references rises by 4.03 points over the same step ($p < 0.001$). Retrieval produces no further improvement on completeness; the C2-to-C3 difference in readiness is not significant ($p = 0.68$).
+
+Retrieval instead supplies formal register. From C2 to C3, formality marker density rises by 7.04 points ($p = 0.025$) while the reference-based content metrics stay flat. Extraction and gap filling therefore determine what the letter says, and retrieval determines how formally it says it; neither alone reproduces the complete system. This corresponds to the expert results, where formality and politeness was among the dimensions on which the panel rated the RAG output most strongly above the baseline, while contextual relevance, tied to the extracted metadata that C2 and C3 share, changed least.
+
+The letters generated by the deployed system, which the experts rated, are free of placeholders and 96.7\% ready to send, whereas the reconstructed C3 condition reaches 40.0\%. The deployed pipeline additionally asks the user clarifying questions for missing fields and injects the sender details held in the user's profile, so its completeness is a property of the whole interactive pipeline rather than of retrieval alone.
+
+\section{Comparison Across Generation Models}
+\label{sec:cross_model}
+
+The pipeline is provider-agnostic by design, so a natural question is how far the results depend on the particular generation model used. This section applies the identical C1 and C3 prompts, with the same cached extraction and the same retrieved documents, to four generation models spanning two model families, varying only the model itself. Table \ref{tab:cross_model} reports the results.
+
+\begin{table}[!htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lccccccX@{}}
+\toprule
+\textbf{Model} & \textbf{Cond.} & \textbf{\makecell{BLEU\\(char)}} & \textbf{chrF++} & \textbf{\makecell{ROUGE\\-L}} & \textbf{\makecell{Place-\\holders}} & \textbf{\makecell{Formality\\density}} & \textbf{\makecell{Latency\\(s)}} \\
+\midrule
+Gemini 2.5 Flash & C1 & 30.21 & 38.86 & 22.23 & 4.07 & 38.8 & 11.6 \\
+Gemini 2.5 Flash & C3 & 32.17 & 38.29 & 21.82 & 1.07 & 49.0 & 10.6 \\
+Gemini 3.5 Flash & C1 & 30.96 & 41.99 & 26.06 & 1.83 & 37.9 & 8.4 \\
+Gemini 3.5 Flash & C3 & 33.44 & 41.66 & 24.71 & 1.50 & 48.6 & 7.2 \\
+Gemini 3.1 Flash Lite & C1 & 34.55 & 39.69 & 25.29 & 4.17 & 40.4 & 2.3 \\
+Gemini 3.1 Flash Lite & C3 & 34.94 & 41.35 & 25.13 & 1.60 & 53.2 & 2.1 \\
+Gemma 4 31B & C1 & 34.09 & 40.49 & 26.23 & 3.77 & 42.5 & 36.7 \\
+Gemma 4 31B & C3 & 35.46 & 40.46 & 24.97 & 1.63 & 57.7 & 38.9 \\
+\bottomrule
+\end{tabularx}
+\caption{Cross-model comparison under identical prompts ($n = 30$ prompts per cell)}
+\label{tab:cross_model}
+\end{table}
+
+The direction of the retrieval effect is consistent across all four models. For every model, moving from C1 to C3 raises character-level BLEU and formality marker density, and reduces the number of unfilled placeholders, with no reversal on any of the three. The benefit of retrieval is therefore a property of the pipeline rather than of one particular model. The four models span two families, three generations, and a range of sizes, and Gemma 4 31B, an open-weight model sharing no training lineage with the Gemini models, behaves like the rest.
+
+The gain in formal register is large and uniform: formality marker density rises by 10.2 points for Gemini 2.5 Flash, 10.7 for Gemini 3.5 Flash, 12.8 for Gemini 3.1 Flash Lite and 15.2 for Gemma 4 31B. The largest gain is recorded by the largest model tested, so retrieval is not a crutch that only weaker models need. The word-level metrics, chrF++ and ROUGE-L, move only slightly and inconsistently across models.
+
+Latency varies by more than an order of magnitude across the four models while the retrieval benefit is present throughout, so the choice of generation model can be made largely on cost and latency grounds.
+
+Locally hosted open models were probed through Ollama but not carried through to a full 30-prompt run within the time available, so no local model appears in Table \ref{tab:cross_model}. Aya 8B responded to a short Sinhala instruction in Devanagari script rather than Sinhala, and Llama 3.2 3B produced Sinhala character sequences that did not form valid words. These are probe observations rather than a systematic evaluation, and the offline deployment path remains to be validated.
 
 \section{Component-Level Evaluation}
 
@@ -1776,11 +1928,13 @@ Strong retrieved structure guidance & RAG & The strongest RAG advantages were in
 
 \section{Evaluation Limitations}
 
-Several limitations must be considered when interpreting the evaluation results. First, the expert evaluation uses a limited number of evaluators because formal Sinhala writing expertise is not widely available. Secondly, Sinhala formal writing quality involves subjective judgement, especially for politeness, register, and naturalness. Thirdly, the prompt set contains 30 prompts, which provides practical coverage for an MSc thesis but cannot represent every possible formal letter scenario. Fourthly, the results are partly dependent on the selected LLM provider. Although the design compares baseline and RAG outputs using the same model, a different model may produce different absolute scores. Finally, the retrieval corpus remains small compared with resources available for high-resource languages, so rare or highly specialized letter contexts may not retrieve ideal examples.
+Several limitations must be considered when interpreting the evaluation results. First, the expert evaluation uses a limited number of evaluators because formal Sinhala writing expertise is not widely available. Secondly, Sinhala formal writing quality involves subjective judgement, especially for politeness, register, and naturalness. Thirdly, the prompt set contains 30 prompts, which provides practical coverage for an MSc thesis but cannot represent every possible formal letter scenario. Fourthly, the results are partly dependent on the selected LLM provider, although the cross-model comparison in Section \ref{sec:cross_model} shows the retrieval benefit to be preserved across four models. Finally, the retrieval corpus remains small compared with resources available for high-resource languages, so rare or highly specialised letter contexts may not retrieve ideal examples.
+
+Three limitations apply specifically to the automatic evaluation. The gold reference set consists of one letter per prompt written by a single author, so it captures one competent rendering of each request rather than the range of acceptable renderings. The reference-based metrics are computed on the letter body only, because the prompts do not state the sender's identity. Finally, the information-only condition C2 was generated after the expert panel had completed its work, so the ablation in Section \ref{sec:ablation} rests on automatic measures rather than human ratings.
 
 \section{Summary}
 
-The evaluation results support the hypothesis that retrieval augmentation improves formal Sinhala letter generation compared with direct LLM prompting. The completed expert evaluation shows higher RAG scores across all six human rating dimensions and a strong pairwise preference for SinhalaLipi output. The remaining component-level and user-feedback results provide additional evidence about extraction, retrieval, and deployed-system usability.
+The evaluation results support the hypothesis that retrieval augmentation improves formal Sinhala letter generation compared with direct LLM prompting. The completed expert evaluation shows higher RAG scores across all six human rating dimensions and a strong pairwise preference for SinhalaLipi output. The automatic evaluation reaches the same conclusion through an independent route: 29 of the 30 baseline letters require manual completion of unfilled fields, against none of the RAG letters, so 96.7\% of RAG letters are directly usable compared with 3.3\% of baseline letters. The ablation shows that structured request information and retrieval address different failure modes: extraction and gap filling deliver letter completeness, while retrieval delivers structural fidelity and formal register. The cross-model comparison shows that the advantage of the pipeline is preserved across four generation models spanning two model families. The remaining component-level and user-feedback results provide additional evidence about extraction, retrieval, and deployed-system usability.
 
 \chapter{Conclusion and Future Work}
 
@@ -1790,16 +1944,16 @@ This research set out to improve Large Language Model support for Sinhala, a low
 \section{Revisiting the Research Questions}
 The main research question asked how a retrieval-augmented generation approach can be used to generate high-quality formal Sinhala letters from informal user prompts. The proposed pipeline and its evaluation demonstrate that grounding a general-purpose multilingual LLM in retrieved Sinhala letter structures and examples produces letters that are consistently rated higher in grammar, structure, formality, fluency, and overall usability than direct LLM prompting.
 
-The sub-questions are addressed as follows. First, the limitations of current LLMs for formal Sinhala text—weak formal register, structural errors, and grammatical and spelling weaknesses—were identified through the baseline condition and the expert evaluation, where the direct LLM baseline scored notably lower on grammar (2.89) and formality (2.94). Second, the combination of LaBSE embeddings and a FAISS index was shown to retrieve relevant Sinhala letter structures and examples, achieving a category hit rate of 93.3\% and a Precision@3 of 0.74. Third, the comparison against the standard LLM baseline, measured through human expert evaluation, showed statistically significant RAG improvements across all six rubric dimensions. Fourth, a human-centred rubric covering grammar, structure, contextual relevance, formality, fluency, and overall usability, complemented by pairwise preference judgements, proved effective for assessing letter quality in the absence of reliable automated metrics for Sinhala. Fifth, the principal limitations of applying RAG to a low-resource language such as Sinhala—small corpus size, sparse coverage of rare letter categories, dependence on OCR and manual curation quality, and residual dependence on the underlying LLM—were identified and analysed.
+The sub-questions are addressed as follows. First, the limitations of current LLMs for formal Sinhala text—weak formal register, structural errors, and grammatical and spelling weaknesses—were identified through the baseline condition and the expert evaluation, where the direct LLM baseline scored notably lower on grammar (2.89) and formality (2.94). Second, the combination of LaBSE embeddings and a FAISS index was shown to retrieve relevant Sinhala letter structures and examples, achieving a category hit rate of 93.3\% and a Precision@3 of 0.74. Third, the comparison against the standard LLM baseline, measured through human expert evaluation, showed statistically significant RAG improvements across all six rubric dimensions. Fourth, a human-centred rubric covering grammar, structure, contextual relevance, formality, fluency, and overall usability, complemented by pairwise preference judgements, proved effective for assessing letter quality, and was supported by reference-based and reference-free automatic measures computed against a purpose-written gold reference set. Fifth, the principal limitations of applying RAG to a low-resource language such as Sinhala—small corpus size, sparse coverage of rare letter categories, dependence on OCR and manual curation quality, and residual dependence on the underlying LLM—were identified and analysed.
 
 \section{Hypothesis Evaluation}
-The evaluation provides strong evidence to reject the null hypothesis (H0). Across all six evaluation dimensions, the RAG-based system scored significantly higher than the direct LLM baseline, with paired tests significant at $p < 0.05$ for every metric and large effect sizes for grammar, structure, formality, fluency, and overall usability. Evaluators also preferred the RAG output in 82.7\% of pairwise comparisons. These results support the alternative hypothesis (H1) that a retrieval-augmented generation approach significantly improves the fluency, grammatical correctness, and contextual relevance of formal Sinhala letters compared with generation by a standard language model alone.
+The evaluation provides strong evidence to reject the null hypothesis (H0). Across all six evaluation dimensions, the RAG-based system scored significantly higher than the direct LLM baseline, with paired tests significant at $p < 0.05$ for every metric and very large effect sizes for grammar, structure, formality, fluency, and overall usability. Evaluators also preferred the RAG output in 82.7\% of pairwise comparisons. The automatic evaluation supports the same conclusion independently of the expert panel: 96.7\% of RAG letters were directly usable against 3.3\% of baseline letters. These results support the alternative hypothesis (H1) that a retrieval-augmented generation approach significantly improves the fluency, grammatical correctness, and contextual relevance of formal Sinhala letters compared with generation by a standard language model alone. The ablation qualifies rather than weakens this conclusion: retrieval is responsible for the gains in structural fidelity and formal register, while the structured extraction and gap-filling stages of the same pipeline are responsible for letter completeness.
 
 \section{Limitations}
 The findings should be interpreted in light of several limitations discussed in the methodology and evaluation chapters. The retrieval corpus is small relative to high-resource language resources, limiting example diversity for rare or highly specialised requests. The evaluation relied on a limited number of expert evaluators, reflecting the scarcity of formal Sinhala writing expertise, and on a set of 30 prompts that, while representative, cannot cover every formal letter scenario. Formal Sinhala writing quality also involves subjective judgement of register and politeness. Finally, although the same model is used in both conditions so that the comparison isolates the effect of retrieval, the absolute quality of generated letters remains partly dependent on the chosen LLM provider.
 
 \section{Future Work}
-Several directions follow naturally from this work. The retrieval corpus can be expanded—through additional curation, the self-improving feedback loop, and OCR of further archival letters—to improve coverage of rare letter categories and increase example diversity. The plug-and-play LLM architecture makes it possible to run the same evaluation protocol with locally hosted models such as Aya 8B and with other providers, enabling a comparative study of model families on the Sinhala letter generation task. Post-generation grammar checking and automatic error correction, explicitly out of scope here, could further raise output quality once Sinhala grammatical error correction resources mature. Automatic, feedback-driven prompt optimisation could be added to the pipeline. Finally, the approach could be extended to other formal Sinhala text types—such as notices, minutes, and official reports—and to other South Asian low-resource languages, testing the generality of retrieval-augmented generation for formal writing in under-resourced settings.
+Several directions follow naturally from this work. The retrieval corpus can be expanded—through additional curation, the self-improving feedback loop, and OCR of further archival letters—to improve coverage of rare letter categories and increase example diversity. The cross-model comparison reported in this thesis covers models reachable through a single hosted provider, including one open-weight model; extending it to open models running locally, and to other commercial providers, would establish more firmly how far the results generalise across model families. A locally hosted comparison is the most immediate gap: the provider-agnostic architecture supports it, but the offline deployment path identified in the research objectives was probed rather than evaluated in this work. The information-only condition was assessed with automatic measures alone, so an expert comparison of all three conditions would confirm whether the division of labour between extraction and retrieval observed here holds under human judgement. Post-generation grammar checking and automatic error correction, explicitly out of scope here, could further raise output quality once Sinhala grammatical error correction resources mature. Automatic, feedback-driven prompt optimisation could be added to the pipeline. Finally, the approach could be extended to other formal Sinhala text types—such as notices, minutes, and official reports—and to other South Asian low-resource languages, testing the generality of retrieval-augmented generation for formal writing in under-resourced settings.
 
 \section{Concluding Remarks}
 This research demonstrates that retrieval-augmented generation is an effective and practical strategy for improving formal text generation in a low-resource language without large-scale model training. By grounding a multilingual LLM in a curated corpus of formal Sinhala letters, SinhalaLipi produces letters that experts find substantially more usable than those generated by direct prompting. Beyond the specific task of letter writing, the work offers a reusable framework and a curated resource that can support continued progress in Sinhala natural language processing and serve as a template for similar efforts in other under-resourced languages.
@@ -1811,6 +1965,56 @@ This research demonstrates that retrieval-augmented generation is an effective a
 
 \begin{appendices}
 
+
+\appendiceC{Generation Prompts for Each Experimental Condition}{App:ConditionPrompts}
+
+This appendix gives the exact prompt template used in each of the three generation conditions defined in Table \ref{tab:experimental_conditions}. The three differ only in the blocks they contain; the model, temperature, and decoding settings are identical.
+
+\textbf{Condition C1 — baseline.} The user prompt is passed with a single instruction and no other context.
+
+\begin{quote}
+\small
+You are a Sinhala formal letter writing assistant. Write a complete formal letter in Sinhala based on the following request. Use proper formal letter structure, formal written Sinhala, appropriate salutation, subject line, body, and closing. Write only the letter.
+
+Request: \{prompt\}
+\end{quote}
+
+\textbf{Condition C2 — information without retrieval.} The extracted metadata and the formatting instructions are supplied, but no retrieved material.
+
+\begin{quote}
+\small
+You are a Sinhala formal letter writing assistant. Generate a complete formal letter IN SINHALA based on the information below.
+
+IMPORTANT: Write the letter ONLY in Sinhala script. Do not translate, explain, or include any English text.
+
+Original Request: \{prompt\}
+
+Letter Details:\\
+- Type, Recipient, Sender, Subject, Purpose, Additional Details\\
+- Event Date, Event Time, Event Venue (for event letter types)
+
+Instructions:
+\begin{enumerate}[nosep]
+\item Write a complete formal letter in Sinhala following standard Sinhala formal letter conventions.
+\item Use proper Sinhala grammar, punctuation, and formal register.
+\item Include appropriate formal greetings and closings.
+\item Address all the details mentioned above.
+\item Use today's date unless a specific date is mentioned in the details above.
+\item Output ONLY the letter content in Sinhala.
+\end{enumerate}
+\end{quote}
+
+\textbf{Condition C3 — full RAG.} Identical to C2 with the retrieved structure template and example letters inserted, and instruction 1 referring to those examples.
+
+\begin{quote}
+\small
+\ldots as C2, with the additional block:
+
+Reference Letter Examples (use these for structure and formal language):\\
+\{retrieved structure template and example letters\}
+
+and instruction 1 replaced by: Write a complete formal letter in Sinhala following the structure of the examples above.
+\end{quote}
 
 \appendiceC{Evaluation Prompt Set}{App:EvaluationPrompts}
 
